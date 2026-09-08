@@ -734,8 +734,12 @@ model RecipeItem {
   notes      String?
 
   recipe     Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
-  subRecipe  Recipe?     @relation("SubRecipeUsage", fields: [subRecipeId], references: [id])
+  // Restrict, not the default SetNull: nulling the reference would leave a BOM
+  // line pointing at nothing, violating the ingredient-XOR-subrecipe constraint
+  // and silently removing cost from every dish above it. Deleting an ingredient
+  // that a recipe still uses must fail, so the recipe is corrected first.
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  subRecipe  Recipe?     @relation("SubRecipeUsage", fields: [subRecipeId], references: [id], onDelete: Restrict)
 
   @@index([recipeId])
   @@index([ingredientId])
