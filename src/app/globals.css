@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    /* Persian numerals everywhere the browser will honour them. */
+    font-feature-settings: 'ss01', 'ss02';
+  }
+  body {
+    @apply bg-ink-950 text-ink-100 font-sans antialiased;
+  }
+  /* Financial figures must align on the decimal point in every table. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-saffron-400 ring-offset-2 ring-offset-ink-950;
+  }
+  ::selection {
+    @apply bg-saffron-400/30;
+  }
+  /* A quiet scrollbar; the data is the loud part. */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { @apply bg-ink-900; }
+  ::-webkit-scrollbar-thumb { @apply bg-ink-700 rounded-full border-2 border-ink-900; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-ink-600; }
+}
+
+@layer components {
+  .card {
+    @apply bg-ink-900 border border-ink-800 rounded-xl;
+  }
+  .card-hover {
+    @apply transition-colors hover:border-ink-700;
+  }
+  .label {
+    @apply text-2xs font-medium tracking-wide text-ink-400 uppercase;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
+           text-sm font-medium transition-colors disabled:opacity-50
+           disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-saffron-400 text-ink-950 hover:bg-saffron-300;
+  }
+  .btn-ghost {
+    @apply btn bg-ink-800 text-ink-100 hover:bg-ink-700;
+  }
+  .input {
+    @apply w-full rounded-lg bg-ink-850 border border-ink-700 px-3 py-2 text-sm
+           text-ink-50 placeholder:text-ink-500
+           focus:border-saffron-400 focus:outline-none;
+  }
+  .th {
+    @apply px-4 py-3 text-right text-2xs font-semibold uppercase tracking-wide
+           text-ink-400 whitespace-nowrap;
+  }
+  .td {
+    @apply px-4 py-3 text-sm text-ink-200 whitespace-nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

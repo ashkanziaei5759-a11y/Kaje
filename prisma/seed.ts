@@ -294,7 +294,7 @@ async function main() {
     ['Basmati Rice', 600_000], ['Butter', 60_000], ['Saffron', 2_500],
     ['Tomato', 160_000], ['Onion', 150_000], ['Potato', 140_000],
     ['Sunflower Oil', 150_000], ['Pizza Cheese', 120_000], ['Pizza Dough Flour', 400_000],
-    ['Burger Bun', 1_600], ['Lavash Bread', 2_500], ['Mayonnaise', 260_000],
+    ['Burger Bun', 1_600], ['Lavash Bread', 2_500], ['Mayonnaise', 90_000],
     ['Ketchup', 70_000], ['Mustard', 25_000], ['Pickle', 60_000], ['Lettuce', 40_000],
     ['Yogurt', 40_000], ['Cucumber', 60_000], ['Mint Dried', 4_000],
     ['Walnut', 15_000], ['Eggplant', 90_000], ['Whey/Kashk', 25_000],
@@ -615,38 +615,6 @@ async function main() {
     menu[m.name] = created.id;
   }
 
-  // ── Price the menu from the cost engine ───────────────────────────────────
-  //
-  // Rather than inventing selling prices, run the engine and take its
-  // recommendation. That way the demo genuinely demonstrates the costing chain,
-  // and every margin shown in the UI is one the system actually derived.
-  //
-  // Two items are then pinned BELOW their recommendation on purpose: a real
-  // menu always contains a loss-leader and an item whose price has not kept up
-  // with ingredient inflation, and the menu-engineering and alert screens have
-  // nothing to show without them.
-  {
-    const { costAllMenuItems } = await import('../src/server/services/costing');
-    const costed = await costAllMenuItems(restaurant.id);
-    // Expressed as a fraction of the recommendation so they stay meaningfully
-    // thin — rather than absurd — however ingredient prices drift.
-    const pinnedFraction: Record<string, number> = {
-      'Chicken Kebab': 0.86,          // a popular draw priced to compete (PLOWHORSE)
-      'Lamb Kebab Koobideh': 0.78,    // price has not kept up with lamb inflation
-    };
-
-    for (const item of costed) {
-      const fraction = pinnedFraction[item.name];
-      const price = fraction
-        ? Math.round((Number(item.recommendedPrice) * fraction) / 5000) * 5000
-        : Number(item.recommendedPrice);
-      await prisma.menuItem.update({
-        where: { id: item.menuItemId },
-        data: { sellingPrice: String(price), priceIsOverridden: fraction !== undefined },
-      });
-    }
-  }
-
   // ── Modifiers ──────────────────────────────────────────────────────────────
   const rExtraCheese = await makeRecipe({
     name: 'Extra Cheese Portion', fa: 'پنیر اضافه', type: 'SUB_RECIPE',
@@ -815,7 +783,7 @@ async function main() {
     ['Tomato', 40, 'kg', 168_000], ['Onion', 35, 'kg', 92_000],
     ['Potato', 35, 'kg', 86_000], ['Sunflower Oil', 35, 'l', 428_000],
     ['Burger Bun', 400, 'piece', 22_000], ['Lavash Bread', 600, 'piece', 8_200],
-    ['Mayonnaise', 48, 'kg', 385_000], ['Ketchup', 18, 'kg', 295_000],
+    ['Mayonnaise', 22, 'kg', 385_000], ['Ketchup', 18, 'kg', 295_000],
     ['Mustard', 6, 'kg', 455_000], ['Butter', 12, 'kg', 1_465_000],
     ['Pickle', 10, 'kg', 213_000], ['Lettuce', 8, 'kg', 132_000],
     ['Eggplant', 20, 'kg', 156_000], ['Cucumber', 15, 'kg', 147_000],
@@ -888,6 +856,38 @@ async function main() {
     });
   }
 
+  // ── Price the menu from the cost engine ───────────────────────────────────
+  //
+  // Rather than inventing selling prices, run the engine and take its
+  // recommendation. That way the demo genuinely demonstrates the costing chain,
+  // and every margin shown in the UI is one the system actually derived.
+  //
+  // Two items are then pinned BELOW their recommendation on purpose: a real
+  // menu always contains a loss-leader and an item whose price has not kept up
+  // with ingredient inflation, and the menu-engineering and alert screens have
+  // nothing to show without them.
+  {
+    const { costAllMenuItems } = await import('../src/server/services/costing');
+    const costed = await costAllMenuItems(restaurant.id);
+    // Expressed as a fraction of the recommendation so they stay meaningfully
+    // thin — rather than absurd — however ingredient prices drift.
+    const pinnedFraction: Record<string, number> = {
+      'Chicken Kebab': 0.86,          // a popular draw priced to compete (PLOWHORSE)
+      'Lamb Kebab Koobideh': 0.78,    // price has not kept up with lamb inflation
+    };
+
+    for (const item of costed) {
+      const fraction = pinnedFraction[item.name];
+      const price = fraction
+        ? Math.round((Number(item.recommendedPrice) * fraction) / 5000) * 5000
+        : Number(item.recommendedPrice);
+      await prisma.menuItem.update({
+        where: { id: item.menuItemId },
+        data: { sellingPrice: String(price), priceIsOverridden: fraction !== undefined },
+      });
+    }
+  }
+
   // ── 60 days of sales ───────────────────────────────────────────────────────
   const { confirmOrder } = await import('../src/server/services/sales');
 
@@ -903,7 +903,14 @@ async function main() {
     for (let i = 0; i < weight; i++) weightedMenu.push(name);
   }
 
-  const priceByItem = new Map(menuSpecs.map((m) => [m.name, m.price]));
+  // Read the prices back from the database. Using the placeholder figures the
+  // items were created with would price 60 days of history against costs that
+  // no longer exist, and every margin in the reports would be fiction.
+  const pricedItems = await prisma.menuItem.findMany({
+    where: { restaurantId: restaurant.id },
+    select: { name: true, sellingPrice: true },
+  });
+  const priceByItem = new Map(pricedItems.map((m) => [m.name, Number(m.sellingPrice)]));
   const modifierPrices: Record<string, number> = {
     'Extra Cheese': 50_000, 'Extra Patty': 120_000, 'Extra Sauce': 20_000,
     'Double Meat': 150_000, 'No Onion': 0, 'No Tomato': 0,

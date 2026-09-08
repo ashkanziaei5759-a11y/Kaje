@@ -517,3 +517,70 @@ describe('configurable tax', () => {
     expect(r.taxAmount).toBe('9810');
   });
 });
+
+// ── sub-recipe line scaling ──────────────────────────────────────────────────
+
+describe('sub-recipe children are scaled to what the parent actually consumes', () => {
+  // Sauce batch: 800 g mayo (160,000) + 200 g ketchup (20,000) = 180,000 per
+  // 1000 g yield. A burger uses 35 g of it.
+  const ctx: EngineContext = {
+    units: UNITS,
+    ingredients: new Map([
+      ['i_mayo', ingredient({ id: 'i_mayo', purchaseUnitPrice: 200_000 })],
+      ['i_ketchup', ingredient({ id: 'i_ketchup', purchaseUnitPrice: 100_000 })],
+    ]),
+    recipes: new Map([
+      ['r_sauce', recipe({
+        id: 'r_sauce', type: 'BATCH', yieldQuantity: 1000, yieldUnitId: 'u_g',
+        items: [
+          { id: 's1', ingredientId: 'i_mayo', quantity: 800, unitId: 'u_g' },
+          { id: 's2', ingredientId: 'i_ketchup', quantity: 200, unitId: 'u_g' },
+        ],
+      })],
+      ['r_burger', recipe({
+        id: 'r_burger',
+        items: [{ id: 'b1', subRecipeId: 'r_sauce', quantity: 35, unitId: 'u_g' }],
+      })],
+    ]),
+  };
+
+  it('reports child quantities for the consumed fraction, not the whole batch', () => {
+    const line = costRecipe('r_burger', ctx).lines[0];
+    const mayo = line.children!.find((c) => c.refId === 'i_mayo')!;
+    // 35 g of a 1000 g batch is 3.5%; 3.5% of 800 g is 28 g — not 800 g.
+    expect(Number(mayo.effectiveQuantity)).toBeCloseTo(28, 6);
+    const ketchup = line.children!.find((c) => c.refId === 'i_ketchup')!;
+    expect(Number(ketchup.effectiveQuantity)).toBeCloseTo(7, 6);
+  });
+
+  it('makes the children sum to their parent line, so the BOM adds up', () => {
+    const line = costRecipe('r_burger', ctx).lines[0];
+    const childTotal = line.children!.reduce((acc, c) => acc + Number(c.totalCost), 0);
+    expect(childTotal).toBeCloseTo(Number(line.totalCost), 4);
+    // 35 g × 180 per gram
+    expect(Number(line.totalCost)).toBeCloseTo(6300, 4);
+  });
+
+  it('scales through two levels of nesting', () => {
+    const deep: EngineContext = {
+      units: UNITS,
+      ingredients: ctx.ingredients,
+      recipes: new Map([
+        ...ctx.recipes,
+        // A dressing that itself uses 500 g of the sauce per 1000 g batch.
+        ['r_dressing', recipe({
+          id: 'r_dressing', type: 'BATCH', yieldQuantity: 1000, yieldUnitId: 'u_g',
+          items: [{ id: 'd1', subRecipeId: 'r_sauce', quantity: 500, unitId: 'u_g' }],
+        })],
+        ['r_salad', recipe({
+          id: 'r_salad',
+          items: [{ id: 'x1', subRecipeId: 'r_dressing', quantity: 100, unitId: 'u_g' }],
+        })],
+      ]),
+    };
+    const line = costRecipe('r_salad', deep).lines[0];
+    // 100 g of dressing → 50 g of sauce → 40 g mayo, 10 g ketchup.
+    const mayo = line.children![0].children!.find((c) => c.refId === 'i_mayo')!;
+    expect(Number(mayo.effectiveQuantity)).toBeCloseTo(40, 6);
+  });
+});

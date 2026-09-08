@@ -263,6 +263,26 @@ function costSubRecipeLine(
   const totalCost = effectiveQuantity.times(unitCost);
   const idealCost = quantity.times(unitCost);
 
+  // subResult.lines describe a WHOLE BATCH of the sub-recipe, but this parent
+  // consumes only part of it. Scale them down to the consumed fraction before
+  // handing them upward.
+  //
+  // This is not cosmetic. Stock depletion walks these same lines, so leaving
+  // them at batch scale would deduct an entire batch of sauce from inventory
+  // every time one burger is sold.
+  //
+  //   consumed_fraction = effective_quantity / (yield_quantity × surviving)
+  //
+  // The surviving fraction is divided out because the batch's own cooking loss
+  // means more input was required than the yield figure alone suggests.
+  const surviving = d(sub.recipeYieldPercent).times(
+    new Decimal(1).minus(d(sub.preparationLossPercent)),
+  );
+  const batchOutput = d(sub.yieldQuantity).times(surviving);
+  const consumedFraction = batchOutput.isZero()
+    ? new Decimal(0)
+    : effectiveQuantity.dividedBy(batchOutput);
+
   return {
     kind: 'SUB_RECIPE',
     refId: sub.id,
@@ -276,8 +296,23 @@ function costSubRecipeLine(
     totalCost: money(totalCost).toFixed(),
     wasteCost: money(totalCost.minus(idealCost).plus(d(subResult.wasteAdjustment).times(quantity))).toFixed(),
     isPackaging: false,
-    children: subResult.lines,
+    children: scaleLines(subResult.lines, consumedFraction),
   };
+}
+
+/**
+ * Rescales a costed line tree by a factor, recursing through nested children.
+ * Quantities and costs scale together so the tree keeps adding up.
+ */
+function scaleLines(lines: CostLine[], factor: Decimal): CostLine[] {
+  if (factor.equals(1)) return lines;
+  return lines.map((line) => ({
+    ...line,
+    effectiveQuantity: d(line.effectiveQuantity).times(factor).toFixed(6),
+    totalCost: money(d(line.totalCost).times(factor)).toFixed(),
+    wasteCost: money(d(line.wasteCost).times(factor)).toFixed(),
+    children: line.children ? scaleLines(line.children, factor) : undefined,
+  }));
 }
 
 function requireUnit(ctx: EngineContext, unitId: string, forWhat: string): EngineUnit {
