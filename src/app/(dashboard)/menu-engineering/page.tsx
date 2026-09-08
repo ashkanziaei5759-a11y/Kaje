@@ -129,9 +129,11 @@ export default async function MenuEngineeringPage({
               })}
             </div>
 
+            {/* In RTL the first flex child sits on the right, which is where the
+                high-popularity quadrants (STAR, PLOWHORSE) are rendered. */}
             <div className="mt-3 flex justify-between text-2xs text-ink-600">
-              <span>← محبوبیت کمتر</span>
-              <span>محبوبیت بیشتر →</span>
+              <span>محبوبیت بیشتر ←</span>
+              <span>→ محبوبیت کمتر</span>
             </div>
           </section>
 
