@@ -1,11 +1,13 @@
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth/session';
+import { getLiveSession } from '@/lib/auth/guard';
 import { LoginForm } from './LoginForm';
 
 export const metadata = { title: 'ورود' };
 
 export default async function LoginPage() {
-  if (await getSession()) redirect('/dashboard');
+  // Live check, not just a token check: a JWT whose user no longer exists
+  // must land on the form rather than redirecting into a guard that bounces back.
+  if (await getLiveSession()) redirect('/dashboard');
 
   return (
     <main className="min-h-screen grid lg:grid-cols-2">
