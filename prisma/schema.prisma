@@ -1,0 +1,1188 @@
+// Kajeh / کاژه — Restaurant Management & Profitability Platform
+//
+// DESIGN NOTES
+// ------------
+// * Money: every monetary column is Decimal(18,4). NEVER Float. The application
+//   layer wraps these in the Money value object (src/lib/money.ts).
+// * Quantities: Decimal(18,6) — recipe quantities go down to fractions of a gram.
+// * Percentages: Decimal(9,6) stored as a FRACTION (0.30 == 30%), not 30.
+// * Multi-tenancy: every business entity carries restaurantId; stock-bearing
+//   entities additionally carry branchId/warehouseId so multi-branch works later
+//   without a migration of business data.
+// * Nothing about tax, margin, labor rate or overhead is encoded here — those
+//   live in CostingProfile / Settings rows so they stay configurable.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tenancy
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Restaurant {
+  id             String   @id @default(cuid())
+  name           String
+  namePersian    String
+  slug           String   @unique
+  currencyCode   String   @default("IRT") // IRT = Toman, IRR = Rial. Configurable.
+  currencySymbol String   @default("تومان")
+  locale         String   @default("fa-IR")
+  timezone       String   @default("Asia/Tehran")
+  calendar       String   @default("jalali") // jalali | gregorian
+  phone          String?
+  address        String?
+  logoUrl        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  branches          Branch[]
+  users             User[]
+  suppliers         Supplier[]
+  ingredients       Ingredient[]
+  recipes           Recipe[]
+  menuCategories    MenuCategory[]
+  menuItems         MenuItem[]
+  employees         Employee[]
+  expenses          Expense[]
+  expenseCategories ExpenseCategory[]
+  purchases         Purchase[]
+  orders            Order[]
+  settings          Setting[]
+  costingProfiles   CostingProfile[]
+  auditLogs         AuditLog[]
+  qrCodes           QRCode[]
+  alerts            Alert[]
+  unitDefinitions   UnitDefinition[]
+  modifiers         Modifier[]
+  wastes            Waste[]
+  inventoryCounts   InventoryCount[]
+}
+
+model Branch {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  code         String
+  address      String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant            Restaurant             @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  warehouses            Warehouse[]
+  users                 User[]
+  purchases             Purchase[]
+  orders                Order[]
+  wastes                Waste[]
+  stockLevels           StockLevel[]
+  inventoryTransactions InventoryTransaction[]
+  expenses              Expense[]
+  inventoryCounts       InventoryCount[]
+
+  @@unique([restaurantId, code])
+  @@index([restaurantId])
+}
+
+/// A stock-holding location inside a branch (main store, kitchen, bar, freezer).
+model Warehouse {
+  id          String   @id @default(cuid())
+  branchId    String
+  name        String
+  namePersian String
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branch                Branch                 @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  stockLevels           StockLevel[]
+  inventoryTransactions InventoryTransaction[]
+  inventoryCounts       InventoryCount[]
+
+  @@index([branchId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Identity, roles & audit
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RoleName {
+  OWNER
+  MANAGER
+  ACCOUNTANT
+  KITCHEN
+  WAITER
+  INVENTORY_MANAGER
+}
+
+model Role {
+  id           String   @id @default(cuid())
+  name         RoleName @unique
+  labelPersian String
+  description  String?
+  /// Permission keys granted to this role, e.g. ["ingredient.read","recipe.write"].
+  /// Editable per deployment — roles are not hard-coded permission bundles.
+  permissions  String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  restaurantId String
+  branchId     String?
+  roleId       String
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch?    @relation(fields: [branchId], references: [id])
+  role       Role       @relation(fields: [roleId], references: [id])
+
+  auditLogs             AuditLog[]
+  inventoryTransactions InventoryTransaction[]
+  wastes                Waste[]
+  purchases             Purchase[]
+  expenses              Expense[]
+  recipeVersions        RecipeVersion[]
+  inventoryCounts       InventoryCount[]
+
+  @@index([restaurantId])
+  @@index([branchId])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  restaurantId String
+  userId       String?
+  /// e.g. "MenuItem", "Ingredient", "Recipe"
+  entityType   String
+  entityId     String
+  /// CREATE | UPDATE | DELETE | APPROVE | LOGIN | PRICE_CHANGE ...
+  action       String
+  /// Field-level before/after diff.
+  before       Json?
+  after        Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [userId], references: [id])
+
+  @@index([restaurantId, entityType, entityId])
+  @@index([restaurantId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Units & configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UnitDimension {
+  MASS
+  VOLUME
+  COUNT
+}
+
+/// Unit conversion is data, not code. `factorToBase` converts this unit into the
+/// dimension's canonical base unit (MASS→g, VOLUME→ml, COUNT→piece).
+model UnitDefinition {
+  id           String        @id @default(cuid())
+  restaurantId String
+  code         String // kg, g, l, ml, piece, package, box
+  labelPersian String
+  dimension    UnitDimension
+  factorToBase Decimal       @db.Decimal(24, 12)
+  isActive     Boolean       @default(true)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, code])
+  @@index([restaurantId])
+}
+
+/// Free-form key/value configuration (tax rate, rounding rule, feature flags…).
+model Setting {
+  id           String   @id @default(cuid())
+  restaurantId String
+  key          String
+  value        Json
+  description  String?
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, key])
+}
+
+enum OverheadAllocationMethod {
+  /// overhead_per_unit = monthly_overhead / expected_monthly_units
+  PER_UNIT
+  /// overhead = selling_price * percentage
+  PERCENT_OF_REVENUE
+  /// overhead = ingredient_cost * percentage
+  PERCENT_OF_FOOD_COST
+  /// overhead = labor_minutes * rate
+  PER_LABOR_MINUTE
+  /// no automatic allocation; per-item manual value only
+  NONE
+}
+
+enum LaborAllocationMethod {
+  /// labor = total_labor_minutes * cost_per_minute (from the item's own timings)
+  PER_MINUTE
+  /// labor = selling_price * percentage
+  PERCENT_OF_REVENUE
+  /// labor = monthly_labor_cost / expected_monthly_units
+  PER_UNIT
+  NONE
+}
+
+enum RoundingRule {
+  NONE
+  NEAREST_1000
+  NEAREST_5000
+  NEAREST_10000
+  /// e.g. 495,000 — ends in 9s
+  CHARM_9
+}
+
+enum PricingStrategy {
+  TARGET_GROSS_MARGIN
+  TARGET_FOOD_COST
+  COST_PLUS_MARKUP
+  FIXED_PROFIT
+}
+
+/// Every business assumption the costing engine needs lives here. A restaurant
+/// may keep several profiles (e.g. "Dine-in", "Delivery") and pick one per item.
+model CostingProfile {
+  id           String  @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  isDefault    Boolean @default(false)
+  isActive     Boolean @default(true)
+
+  // ---- Labor ----
+  laborMethod           LaborAllocationMethod @default(PER_MINUTE)
+  laborCostPerMinute    Decimal               @default(0) @db.Decimal(18, 4)
+  laborPercentOfRevenue Decimal               @default(0) @db.Decimal(9, 6)
+  monthlyLaborCost      Decimal               @default(0) @db.Decimal(18, 4)
+
+  // ---- Overhead ----
+  overheadMethod            OverheadAllocationMethod @default(PER_UNIT)
+  monthlyOverheadCost       Decimal                  @default(0) @db.Decimal(18, 4)
+  expectedMonthlyUnits      Int                      @default(1)
+  overheadPercentOfRevenue  Decimal                  @default(0) @db.Decimal(9, 6)
+  overheadPercentOfFoodCost Decimal                  @default(0) @db.Decimal(9, 6)
+  overheadPerLaborMinute    Decimal                  @default(0) @db.Decimal(18, 4)
+
+  // ---- Pricing targets ----
+  pricingStrategy    PricingStrategy @default(TARGET_GROSS_MARGIN)
+  targetGrossMargin  Decimal         @default(0.30) @db.Decimal(9, 6)
+  targetFoodCostPct  Decimal         @default(0.30) @db.Decimal(9, 6)
+  targetNetMargin    Decimal         @default(0.15) @db.Decimal(9, 6)
+  markupMultiplier   Decimal         @default(3) @db.Decimal(9, 6)
+  fixedDesiredProfit Decimal         @default(0) @db.Decimal(18, 4)
+  minimumMargin      Decimal         @default(0.10) @db.Decimal(9, 6)
+
+  // ---- Price presentation ----
+  roundingRule RoundingRule @default(NEAREST_5000)
+  /// VAT / tax rate as a fraction. 0.09 == 9%.
+  taxRate      Decimal      @default(0) @db.Decimal(9, 6)
+  /// If true, menu prices already contain tax.
+  taxInclusive Boolean      @default(true)
+
+  /// Global waste/shrink uplift applied on top of per-ingredient yields.
+  wasteBufferPct Decimal @default(0) @db.Decimal(9, 6)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems  MenuItem[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Suppliers, ingredients & price history
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id            String   @id @default(cuid())
+  restaurantId  String
+  name          String
+  namePersian   String?
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  /// e.g. "نقدی", "۳۰ روزه"
+  paymentTerms  String?
+  notes         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  restaurant   Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  ingredients  Ingredient[]
+  purchases    Purchase[]
+  priceHistory IngredientPriceHistory[]
+  expenses     Expense[]
+
+  @@index([restaurantId])
+}
+
+enum IngredientCategory {
+  MEAT
+  POULTRY
+  SEAFOOD
+  DAIRY
+  VEGETABLE
+  FRUIT
+  GRAIN
+  SPICE
+  OIL
+  BEVERAGE
+  PACKAGING
+  CLEANING
+  OTHER
+}
+
+model Ingredient {
+  id           String             @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  category     IngredientCategory @default(OTHER)
+  sku          String?
+
+  /// Unit the ingredient is bought in (kg, box, package…).
+  purchaseUnitId   String
+  /// Unit recipes consume it in (g, ml, piece…).
+  recipeUnitId     String
+  /// How many recipe units are in ONE purchase unit.
+  /// 1 kg -> 1000 g  ⇒  conversionFactor = 1000
+  conversionFactor Decimal @default(1) @db.Decimal(24, 12)
+
+  /// Usable fraction after cleaning/trimming. 0.80 == 80% yield.
+  /// Effective cost per usable unit = purchase cost / yield.
+  yieldPercent Decimal @default(1) @db.Decimal(9, 6)
+
+  /// Latest observed price for ONE purchase unit.
+  lastPurchasePrice Decimal   @default(0) @db.Decimal(18, 4)
+  /// Weighted-average cost per ONE purchase unit (moving average, updated on receipt).
+  averagePrice      Decimal   @default(0) @db.Decimal(18, 4)
+  lastPurchaseDate  DateTime?
+
+  minimumStock Decimal @default(0) @db.Decimal(18, 6)
+  reorderLevel Decimal @default(0) @db.Decimal(18, 6)
+
+  /// True for boxes/cups/bags — excluded from food-cost %, counted as packaging.
+  isPackaging Boolean @default(false)
+
+  defaultSupplierId String?
+  notes             String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  defaultSupplier Supplier?  @relation(fields: [defaultSupplierId], references: [id])
+
+  stockLevels           StockLevel[]
+  inventoryTransactions InventoryTransaction[]
+  priceHistory          IngredientPriceHistory[]
+  purchaseItems         PurchaseItem[]
+  recipeItems           RecipeItem[]
+  wastes                Waste[]
+  countLines            InventoryCountLine[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId, category])
+  @@index([restaurantId, isActive])
+}
+
+/// Append-only price ledger. Drives the price chart, the price-increase alerts
+/// and the historical cost reports.
+model IngredientPriceHistory {
+  id            String   @id @default(cuid())
+  ingredientId  String
+  supplierId    String?
+  /// Price of ONE purchase unit at this point in time.
+  price         Decimal  @db.Decimal(18, 4)
+  previousPrice Decimal? @db.Decimal(18, 4)
+  /// Fractional change vs previousPrice. 0.085 == +8.5%.
+  changePercent Decimal? @db.Decimal(12, 6)
+  source        String   @default("PURCHASE") // PURCHASE | MANUAL | IMPORT
+  referenceId   String? // purchase id, import batch…
+  effectiveAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  supplier   Supplier?  @relation(fields: [supplierId], references: [id])
+
+  @@index([ingredientId, effectiveAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Purchasing
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PurchaseStatus {
+  DRAFT
+  PENDING_REVIEW // e.g. produced by OCR, awaiting human approval
+  APPROVED // stock received, inventory + costs updated
+  CANCELLED
+}
+
+model Purchase {
+  id            String         @id @default(cuid())
+  restaurantId  String
+  branchId      String
+  supplierId    String
+  invoiceNumber String?
+  purchaseDate  DateTime
+  status        PurchaseStatus @default(DRAFT)
+
+  subtotal       Decimal @default(0) @db.Decimal(18, 4)
+  discountAmount Decimal @default(0) @db.Decimal(18, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(18, 4)
+  totalAmount    Decimal @default(0) @db.Decimal(18, 4)
+
+  notes         String?
+  attachmentUrl String?
+  /// Raw OCR payload kept for audit/debugging of the extraction step.
+  ocrRaw        Json?
+  ocrConfidence Decimal? @db.Decimal(5, 4)
+
+  createdById String?
+  approvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  restaurant Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch         @relation(fields: [branchId], references: [id])
+  supplier   Supplier       @relation(fields: [supplierId], references: [id])
+  createdBy  User?          @relation(fields: [createdById], references: [id])
+  items      PurchaseItem[]
+
+  @@index([restaurantId, purchaseDate])
+  @@index([restaurantId, status])
+  @@index([supplierId])
+}
+
+model PurchaseItem {
+  id             String  @id @default(cuid())
+  purchaseId     String
+  ingredientId   String
+  /// Quantity expressed in `unitId`.
+  quantity       Decimal @db.Decimal(18, 6)
+  unitId         String
+  /// Price of one `unitId`.
+  unitPrice      Decimal @db.Decimal(18, 4)
+  discountAmount Decimal @default(0) @db.Decimal(18, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(18, 4)
+  lineTotal      Decimal @db.Decimal(18, 4)
+  notes          String?
+
+  purchase   Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([purchaseId])
+  @@index([ingredientId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inventory
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Current on-hand position. Quantities are stored in the ingredient's RECIPE
+/// unit (grams, ml, pieces) so recipe deduction needs no conversion at runtime.
+model StockLevel {
+  id           String   @id @default(cuid())
+  ingredientId String
+  branchId     String
+  warehouseId  String
+  quantity     Decimal  @default(0) @db.Decimal(18, 6)
+  /// Moving-average cost of ONE recipe unit currently on hand.
+  avgUnitCost  Decimal  @default(0) @db.Decimal(18, 8)
+  updatedAt    DateTime @updatedAt
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  branch     Branch     @relation(fields: [branchId], references: [id])
+  warehouse  Warehouse  @relation(fields: [warehouseId], references: [id])
+
+  @@unique([ingredientId, warehouseId])
+  @@index([branchId])
+}
+
+enum InventoryTransactionType {
+  PURCHASE_RECEIPT
+  SALE_DEPLETION
+  SALE_REVERSAL // cancellation / refund
+  WASTE
+  ADJUSTMENT
+  TRANSFER_IN
+  TRANSFER_OUT
+  COUNT_CORRECTION
+  PRODUCTION_IN // batch sub-recipe produced
+  PRODUCTION_OUT // ingredients consumed by a batch
+}
+
+/// Append-only stock ledger. StockLevel is a materialised projection of this.
+model InventoryTransaction {
+  id           String                   @id @default(cuid())
+  ingredientId String
+  branchId     String
+  warehouseId  String
+  type         InventoryTransactionType
+  /// Signed, in the ingredient's recipe unit. Negative = stock left.
+  quantity     Decimal                  @db.Decimal(18, 6)
+  /// Cost of ONE recipe unit for this movement.
+  unitCost     Decimal                  @db.Decimal(18, 8)
+  /// quantity * unitCost (signed).
+  totalCost    Decimal                  @db.Decimal(18, 4)
+  balanceAfter Decimal                  @db.Decimal(18, 6)
+
+  /// Polymorphic pointer to what caused this movement.
+  referenceType String? // Purchase | Order | Waste | InventoryCount | Transfer
+  referenceId   String?
+  reason        String?
+  userId        String?
+  occurredAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  branch     Branch     @relation(fields: [branchId], references: [id])
+  warehouse  Warehouse  @relation(fields: [warehouseId], references: [id])
+  user       User?      @relation(fields: [userId], references: [id])
+
+  @@index([ingredientId, occurredAt])
+  @@index([branchId, occurredAt])
+  @@index([referenceType, referenceId])
+}
+
+enum WasteReason {
+  SPOILAGE
+  EXPIRED
+  BURNED
+  PREPARATION
+  OVERPRODUCTION
+  DAMAGED
+  UNKNOWN
+  OTHER
+}
+
+model Waste {
+  id           String      @id @default(cuid())
+  restaurantId String
+  branchId     String
+  ingredientId String
+  /// In the ingredient's recipe unit.
+  quantity     Decimal     @db.Decimal(18, 6)
+  unitCost     Decimal     @db.Decimal(18, 8)
+  totalCost    Decimal     @db.Decimal(18, 4)
+  reason       WasteReason
+  notes        String?
+  userId       String?
+  occurredAt   DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch     @relation(fields: [branchId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+  user       User?      @relation(fields: [userId], references: [id])
+
+  @@index([restaurantId, occurredAt])
+  @@index([ingredientId])
+}
+
+/// Physical stock take — the source of ACTUAL food cost.
+model InventoryCount {
+  id           String   @id @default(cuid())
+  restaurantId String
+  branchId     String
+  warehouseId  String
+  countedAt    DateTime
+  status       String   @default("DRAFT") // DRAFT | APPROVED
+  notes        String?
+  userId       String?
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch               @relation(fields: [branchId], references: [id])
+  warehouse  Warehouse            @relation(fields: [warehouseId], references: [id])
+  user       User?                @relation(fields: [userId], references: [id])
+  lines      InventoryCountLine[]
+
+  @@index([restaurantId, countedAt])
+}
+
+model InventoryCountLine {
+  id            String  @id @default(cuid())
+  countId       String
+  ingredientId  String
+  expectedQty   Decimal @db.Decimal(18, 6)
+  countedQty    Decimal @db.Decimal(18, 6)
+  varianceQty   Decimal @db.Decimal(18, 6)
+  unitCost      Decimal @db.Decimal(18, 8)
+  varianceValue Decimal @db.Decimal(18, 4)
+
+  count      InventoryCount @relation(fields: [countId], references: [id], onDelete: Cascade)
+  ingredient Ingredient     @relation(fields: [ingredientId], references: [id])
+
+  @@index([countId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recipes / BOM
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RecipeType {
+  /// Recipe that produces a sellable menu item.
+  MENU_ITEM
+  /// Intermediate preparation (sauce, dough, marinade) consumed by other recipes.
+  SUB_RECIPE
+  /// Produced in batches and stocked (a SUB_RECIPE with production runs).
+  BATCH
+}
+
+model Recipe {
+  id           String     @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  type         RecipeType @default(MENU_ITEM)
+  description  String?
+
+  /// How many portions/units ONE execution of this recipe produces.
+  /// Cost per portion = total recipe cost / yieldQuantity.
+  yieldQuantity Decimal  @default(1) @db.Decimal(18, 6)
+  yieldUnitId   String?
+  /// Portion size in the yield unit (informational; used for scaling).
+  portionSize   Decimal? @db.Decimal(18, 6)
+
+  /// Recipe-level usable fraction, applied AFTER ingredient-level yields.
+  /// Covers cooking loss / evaporation. 0.90 == 10% loss.
+  recipeYieldPercent     Decimal @default(1) @db.Decimal(9, 6)
+  /// Extra preparation loss on top (kept separate so it can be reported on).
+  preparationLossPercent Decimal @default(0) @db.Decimal(9, 6)
+
+  prepTimeMinutes Int @default(0)
+  cookTimeMinutes Int @default(0)
+
+  currentVersion Int      @default(1)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  items     RecipeItem[]
+  /// Places where THIS recipe is used as a component of another recipe.
+  usedIn    RecipeItem[]    @relation("SubRecipeUsage")
+  versions  RecipeVersion[]
+  menuItems MenuItem[]
+  modifiers Modifier[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId, type])
+}
+
+/// One line of a bill of materials. EXACTLY ONE of ingredientId / subRecipeId
+/// is set — enforced in the application layer and by a check constraint added
+/// in the migration.
+model RecipeItem {
+  id       String @id @default(cuid())
+  recipeId String
+
+  ingredientId String?
+  subRecipeId  String?
+
+  /// Quantity in `unitId`. For a sub-recipe, quantity is in the sub-recipe's
+  /// yield unit (e.g. 30 g of burger sauce).
+  quantity Decimal @db.Decimal(18, 6)
+  unitId   String
+
+  /// Line-level yield override (falls back to the ingredient's own yield).
+  yieldPercentOverride Decimal? @db.Decimal(9, 6)
+  /// Optional line-level waste on top of yield.
+  wastePercent         Decimal  @default(0) @db.Decimal(9, 6)
+
+  isOptional Boolean @default(false)
+  sortOrder  Int     @default(0)
+  notes      String?
+
+  recipe     Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
+  subRecipe  Recipe?     @relation("SubRecipeUsage", fields: [subRecipeId], references: [id])
+
+  @@index([recipeId])
+  @@index([ingredientId])
+  @@index([subRecipeId])
+}
+
+/// Immutable snapshot of a recipe's BOM plus its cost at the time it was saved.
+/// Lets management compare historical profitability across recipe revisions.
+model RecipeVersion {
+  id             String   @id @default(cuid())
+  recipeId       String
+  version        Int
+  /// Full serialized BOM at this version.
+  snapshot       Json
+  /// Costed result at the time of the snapshot.
+  totalCost      Decimal  @db.Decimal(18, 4)
+  costPerPortion Decimal  @db.Decimal(18, 4)
+  changeNote     String?
+  createdById    String?
+  createdAt      DateTime @default(now())
+
+  recipe    Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation(fields: [createdById], references: [id])
+
+  @@unique([recipeId, version])
+  @@index([recipeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Menu
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MenuCategory {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  description  String?
+  imageUrl     String?
+  icon         String?
+  sortOrder    Int      @default(0)
+  isVisible    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant   Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+  availability MenuAvailability[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId, sortOrder])
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE // shown but marked sold out
+  HIDDEN // not shown on the public menu at all
+}
+
+model MenuItem {
+  id               String  @id @default(cuid())
+  restaurantId     String
+  categoryId       String
+  recipeId         String?
+  costingProfileId String?
+
+  name               String
+  namePersian        String
+  description        String?
+  descriptionPersian String?
+  imageUrl           String?
+  sku                String?
+
+  /// Actual price charged. Null ⇒ fall back to the engine's recommendation.
+  sellingPrice      Decimal? @db.Decimal(18, 4)
+  /// True when a human typed the price instead of accepting the recommendation.
+  priceIsOverridden Boolean  @default(false)
+
+  /// Per-item packaging cost that is not part of the recipe BOM.
+  packagingCostOverride Decimal? @db.Decimal(18, 4)
+  /// Per-item manual overhead, used when the profile method is NONE.
+  overheadCostOverride  Decimal? @db.Decimal(18, 4)
+  /// Per-item labor minutes; falls back to recipe prep+cook time.
+  laborMinutesOverride  Int?
+
+  availability                 AvailabilityStatus @default(AVAILABLE)
+  /// When true, the item flips to UNAVAILABLE automatically if a required
+  /// ingredient is out of stock. A manual availability change wins over this.
+  autoSoldOut                  Boolean            @default(true)
+  availabilityManualOverrideAt DateTime?
+
+  isFeatured Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  allergens String[]
+  tags      String[]
+  calories  Int?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category       MenuCategory    @relation(fields: [categoryId], references: [id])
+  recipe         Recipe?         @relation(fields: [recipeId], references: [id])
+  costingProfile CostingProfile? @relation(fields: [costingProfileId], references: [id])
+
+  modifierGroups MenuItemModifier[]
+  orderItems     OrderItem[]
+  costSnapshots  CostSnapshot[]
+  availability_  MenuAvailability[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId, categoryId])
+  @@index([restaurantId, availability])
+}
+
+/// Time-window scheduling: breakfast 08:00–12:00, lunch 12:00–17:00…
+/// Attaches to an item OR a whole category.
+model MenuAvailability {
+  id          String  @id @default(cuid())
+  menuItemId  String?
+  categoryId  String?
+  /// 0 = Saturday … 6 = Friday (Iranian week). Null = every day.
+  dayOfWeek   Int?
+  /// Minutes from midnight, local restaurant time.
+  startMinute Int
+  endMinute   Int
+  label       String?
+
+  menuItem MenuItem?     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  category MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
+  @@index([categoryId])
+}
+
+enum ModifierType {
+  /// Adds ingredients & price (Extra Cheese).
+  ADDITION
+  /// Removes ingredients, usually free (No Onion).
+  REMOVAL
+  /// Swaps one component for another.
+  SUBSTITUTION
+}
+
+model Modifier {
+  id             String       @id @default(cuid())
+  restaurantId   String
+  name           String
+  namePersian    String
+  type           ModifierType @default(ADDITION)
+  /// Extra charged to the customer.
+  priceDelta     Decimal      @default(0) @db.Decimal(18, 4)
+  /// BOM of what this modifier adds (or removes, with negative effect).
+  recipeId       String?
+  /// Multiplier applied to the linked recipe. -1 for a REMOVAL.
+  quantityFactor Decimal      @default(1) @db.Decimal(9, 4)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  recipe     Recipe?    @relation(fields: [recipeId], references: [id])
+
+  menuItems      MenuItemModifier[]
+  orderModifiers OrderModifier[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+}
+
+model MenuItemModifier {
+  id         String  @id @default(cuid())
+  menuItemId String
+  modifierId String
+  isDefault  Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  modifier Modifier @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, modifierId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// People & expenses
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum SalaryType {
+  MONTHLY
+  DAILY
+  HOURLY
+}
+
+model Employee {
+  id            String     @id @default(cuid())
+  restaurantId  String
+  name          String
+  role          String
+  department    String?
+  phone         String?
+  salaryType    SalaryType @default(MONTHLY)
+  /// Gross pay for ONE period of `salaryType`.
+  salaryAmount  Decimal    @default(0) @db.Decimal(18, 4)
+  /// Contract hours per month — used to derive an hourly/per-minute rate.
+  monthlyHours  Decimal    @default(0) @db.Decimal(10, 2)
+  /// Employer-side additions (insurance, benefits) as a fraction of salary.
+  burdenPercent Decimal    @default(0) @db.Decimal(9, 6)
+  hireDate      DateTime?
+  isActive      Boolean    @default(true)
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, isActive])
+}
+
+enum ExpenseType {
+  FIXED
+  VARIABLE
+  ONE_TIME
+  RECURRING
+}
+
+model ExpenseCategory {
+  id           String  @id @default(cuid())
+  restaurantId String
+  name         String
+  namePersian  String
+  /// Whether expenses in this category feed the overhead allocation pool.
+  isOverhead   Boolean @default(true)
+  isLabor      Boolean @default(false)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  expenses   Expense[]
+
+  @@unique([restaurantId, name])
+}
+
+model Expense {
+  id                 String      @id @default(cuid())
+  restaurantId       String
+  branchId           String?
+  categoryId         String
+  supplierId         String?
+  amount             Decimal     @db.Decimal(18, 4)
+  type               ExpenseType @default(VARIABLE)
+  expenseDate        DateTime
+  description        String?
+  payee              String?
+  attachmentUrl      String?
+  isRecurring        Boolean     @default(false)
+  /// MONTHLY | WEEKLY | YEARLY when isRecurring.
+  recurrenceInterval String?
+  createdById        String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch?         @relation(fields: [branchId], references: [id])
+  category   ExpenseCategory @relation(fields: [categoryId], references: [id])
+  supplier   Supplier?       @relation(fields: [supplierId], references: [id])
+  createdBy  User?           @relation(fields: [createdById], references: [id])
+
+  @@index([restaurantId, expenseDate])
+  @@index([categoryId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sales
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED // stock depleted, cost snapshots written
+  COMPLETED
+  CANCELLED // stock restored
+  REFUNDED // stock restored
+}
+
+enum OrderChannel {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+  ONLINE
+}
+
+model Order {
+  id           String       @id @default(cuid())
+  restaurantId String
+  branchId     String
+  orderNumber  String
+  status       OrderStatus  @default(DRAFT)
+  channel      OrderChannel @default(DINE_IN)
+
+  subtotal       Decimal @default(0) @db.Decimal(18, 4)
+  discountAmount Decimal @default(0) @db.Decimal(18, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(18, 4)
+  totalAmount    Decimal @default(0) @db.Decimal(18, 4)
+  /// Sum of the cost snapshots on this order's lines.
+  totalCost      Decimal @default(0) @db.Decimal(18, 4)
+
+  tableNumber   String?
+  customerName  String?
+  customerPhone String?
+  notes         String?
+  placedAt      DateTime  @default(now())
+  closedAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch     Branch      @relation(fields: [branchId], references: [id])
+  items      OrderItem[]
+
+  @@unique([restaurantId, orderNumber])
+  @@index([restaurantId, placedAt])
+  @@index([restaurantId, status])
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  menuItemId String
+  quantity   Int
+  /// Price of one unit at the moment of sale.
+  unitPrice  Decimal @db.Decimal(18, 4)
+  lineTotal  Decimal @db.Decimal(18, 4)
+  notes      String?
+
+  order        Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem     MenuItem        @relation(fields: [menuItemId], references: [id])
+  modifiers    OrderModifier[]
+  costSnapshot CostSnapshot?
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model OrderModifier {
+  id          String  @id @default(cuid())
+  orderItemId String
+  modifierId  String
+  quantity    Int     @default(1)
+  priceDelta  Decimal @db.Decimal(18, 4)
+  costDelta   Decimal @db.Decimal(18, 4)
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifier  Modifier  @relation(fields: [modifierId], references: [id])
+
+  @@index([orderItemId])
+}
+
+/// Frozen cost breakdown captured at the instant of sale. Ingredient prices may
+/// change tomorrow; historical profit reports must not.
+model CostSnapshot {
+  id          String  @id @default(cuid())
+  menuItemId  String
+  orderItemId String? @unique
+
+  ingredientCost  Decimal @db.Decimal(18, 4)
+  subRecipeCost   Decimal @db.Decimal(18, 4)
+  wasteAdjustment Decimal @db.Decimal(18, 4)
+  laborCost       Decimal @db.Decimal(18, 4)
+  packagingCost   Decimal @db.Decimal(18, 4)
+  overheadCost    Decimal @db.Decimal(18, 4)
+  modifierCost    Decimal @default(0) @db.Decimal(18, 4)
+  totalCost       Decimal @db.Decimal(18, 4)
+
+  sellingPrice   Decimal @db.Decimal(18, 4)
+  grossProfit    Decimal @db.Decimal(18, 4)
+  grossMarginPct Decimal @db.Decimal(9, 6)
+  foodCostPct    Decimal @db.Decimal(9, 6)
+
+  /// Full per-ingredient breakdown, so "why is this dish expensive?" is
+  /// answerable years later.
+  breakdown     Json
+  /// Recipe version this cost was computed from.
+  recipeVersion Int?
+  /// MANUAL | SALE | SCHEDULED — how the snapshot came to exist.
+  reason        String   @default("SALE")
+  capturedAt    DateTime @default(now())
+
+  menuItem  MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId, capturedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public menu & notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+model QRCode {
+  id           String   @id @default(cuid())
+  restaurantId String
+  label        String   @default("منوی دیجیتال")
+  /// Random token embedded in the public URL; regenerating it invalidates
+  /// previously printed codes.
+  token        String   @unique
+  targetPath   String   @default("/menu")
+  scanCount    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+}
+
+enum AlertType {
+  LOW_STOCK
+  OUT_OF_STOCK
+  INGREDIENT_PRICE_INCREASE
+  RECIPE_COST_INCREASE
+  MARGIN_BELOW_TARGET
+  HIGH_WASTE
+  COST_VARIANCE
+  ITEM_UNPROFITABLE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Alert {
+  id           String        @id @default(cuid())
+  restaurantId String
+  type         AlertType
+  severity     AlertSeverity @default(WARNING)
+  title        String
+  message      String
+  entityType   String?
+  entityId     String?
+  payload      Json?
+  isRead       Boolean       @default(false)
+  resolvedAt   DateTime?
+  createdAt    DateTime      @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, isRead, createdAt])
+  @@index([restaurantId, type])
+}
