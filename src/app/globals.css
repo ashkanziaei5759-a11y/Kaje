@@ -68,6 +68,22 @@
   }
 }
 
+@keyframes slideUp {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@layer base {
+  /* Installed as an app, the menu draws behind the status bar; these keep
+     content clear of the notch and the home indicator. */
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  /* Stop iOS inflating text in landscape, which breaks the price alignment. */
+  html { -webkit-text-size-adjust: 100%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

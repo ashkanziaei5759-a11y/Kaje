@@ -3,10 +3,17 @@ import type { Metadata } from 'next';
 import { getPublicMenu } from '@/server/services/menu';
 import { MenuBrowser } from './MenuBrowser';
 
-// The public menu is the one page a customer sees, usually on a phone with a
-// weak connection at a table. Cache it and revalidate every couple of minutes
-// rather than hitting the database on every scan.
-export const revalidate = 120;
+// Rendered per request, not statically prerendered.
+//
+// The menu's content is time-dependent — category serving windows open and
+// close through the day, and items flip to sold out as stock runs down. A
+// build-time prerender freezes both: the page shipped showing every category
+// as closed, because the build ran at 11:00 UTC and judged a 12:00 Tehran
+// opening against the wrong clock.
+//
+// Speed comes from the service worker instead, which caches the rendered menu
+// on the device. That also means `next build` no longer needs database access.
+export const dynamic = 'force-dynamic';
 
 const RESTAURANT_SLUG = process.env.RESTAURANT_SLUG ?? 'kajeh';
 
