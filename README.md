@@ -43,6 +43,17 @@ fiction. Snapshots are written once and never recalculated.
 
 ---
 
+## See it
+
+A live preview of the menu, with the real seeded data, runs at
+**https://claude.ai/code/artifact/4afa54ff-fb02-49d9-b5e5-92575e78f104** —
+open it on a phone to see what a diner sees, including the add-to-home-screen
+flow. The same page is checked in at `docs/menu-preview.html`.
+
+The menu is an installable PWA: on Android it offers a one-tap install, on iOS
+it shows the Share → Add to Home Screen route (iOS has no install API). Once
+installed it opens without browser chrome and the whole menu works offline.
+
 ## Quick start
 
 Requires Node 20+ and PostgreSQL 14+.
