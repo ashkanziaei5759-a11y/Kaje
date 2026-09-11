@@ -59,7 +59,10 @@ export default async function MenuItemPage({ params }: { params: Promise<{ id: s
         title={item.namePersian}
         subtitle={`${item.category.namePersian} — ${item.name}`}
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/menu-items/${id}/cost`} className="btn-primary text-2xs py-1.5">
+              ساخت و ویرایش قیمت
+            </Link>
             {item.isFeatured && <Badge tone="accent">ویژه</Badge>}
             <Badge tone={
               item.availability === 'AVAILABLE' ? 'positive'

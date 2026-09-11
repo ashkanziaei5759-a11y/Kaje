@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth/guard';
 import { prisma } from '@/lib/db';
 import { PageHeader, KpiCard, Badge, Table } from '@/components/ui';
+import { IngredientPriceEditor, type EditableIngredient } from '@/components/cost/IngredientPriceEditor';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
 import { formatCurrency, formatPercent, formatNumber, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
 
@@ -60,6 +62,32 @@ export default async function IngredientsPage() {
       </div>
 
       <section className="mt-6">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-ink-100">ویرایش قیمت و بازده</h2>
+          <p className="mt-0.5 text-2xs leading-5 text-ink-500">
+            چند ردیف را با هم تغییر دهید و یک‌جا ذخیره کنید. ستون «اثر» نشان می‌دهد هزینه هر
+            واحد مصرف چند درصد جابه‌جا می‌شود.
+          </p>
+        </div>
+        <IngredientPriceEditor
+          symbol={symbol}
+          canEdit={hasPermission(user.permissions, PERMISSIONS.INGREDIENT_WRITE)}
+          ingredients={ingredients
+            .filter((i) => i.isActive)
+            .map((i): EditableIngredient => ({
+              id: i.id,
+              name: i.namePersian,
+              purchaseUnit: unitLabel.get(i.purchaseUnitId) ?? '',
+              recipeUnit: unitLabel.get(i.recipeUnitId) ?? '',
+              conversionFactor: i.conversionFactor.toString(),
+              price: (i.averagePrice.isZero() ? i.lastPurchasePrice : i.averagePrice).toString(),
+              yieldPercent: i.yieldPercent.toString(),
+            }))}
+        />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-sm font-semibold text-ink-100">همه مواد اولیه</h2>
         <Table>
           <thead>
             <tr className="border-b border-ink-800">

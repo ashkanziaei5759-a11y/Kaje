@@ -82,6 +82,13 @@
   }
   /* Stop iOS inflating text in landscape, which breaks the price alignment. */
   html { -webkit-text-size-adjust: 100%; }
+
+  /* Removes the ~300ms wait mobile browsers add before firing a tap, in case
+     it turns into a double-tap zoom. Applied to controls only, so pinch-zoom
+     on the page itself still works. */
+  button, a, input, select, textarea, [role='button'] {
+    touch-action: manipulation;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
