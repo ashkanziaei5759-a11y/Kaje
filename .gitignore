@@ -15,3 +15,7 @@ coverage/
 next-env.d.ts
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Uploaded menu photos are user content, not source.
+public/uploads/*
+!public/uploads/.gitkeep

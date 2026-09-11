@@ -5,6 +5,8 @@ import { getPublicMenu } from '@/server/services/menu';
 import { PageHeader, Badge } from '@/components/ui';
 import { QrPanel } from '@/components/QrPanel';
 import { AvailabilityToggle } from '@/components/AvailabilityToggle';
+import { ImageUploader } from '@/components/menu/ImageUploader';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
 import { formatCurrency } from '@/lib/format';
 
 export const metadata = { title: 'منوی دیجیتال و QR' };
@@ -29,17 +31,18 @@ export default async function DigitalMenuPage() {
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
+  const canEditMenu = hasPermission(user.permissions, PERMISSIONS.MENU_WRITE);
   const visibleCount = publicMenu?.categories.reduce((n, c) => n + c.items.length, 0) ?? 0;
 
   return (
     <>
       <PageHeader
         title="منوی دیجیتال و QR"
-        subtitle="کدی که روی میز چاپ می‌شود و منویی که مشتری می‌بیند"
+        subtitle="کدی که روی میز چاپ می‌شود، عکس غذاها و منویی که مشتری می‌بیند"
         action={<Badge tone="accent">{visibleCount.toLocaleString('fa-IR')} آیتم روی منو</Badge>}
       />
 
-      <div className="grid lg:grid-cols-[22rem_1fr] gap-4">
+      <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
         <QrPanel
           svg={rendered.svg}
           png={rendered.png}
@@ -49,7 +52,7 @@ export default async function DigitalMenuPage() {
           restaurantName={restaurant?.namePersian ?? 'کاژه'}
         />
 
-        <section>
+        <section className="min-w-0">
           <h2 className="mb-3 text-sm font-semibold text-ink-100">وضعیت نمایش آیتم‌ها</h2>
           <p className="mb-3 text-2xs leading-6 text-ink-500">
             «موجود» روی منو نمایش داده و قابل سفارش است. «ناموجود» نمایش داده می‌شود اما
@@ -59,24 +62,33 @@ export default async function DigitalMenuPage() {
 
           <div className="card divide-y divide-ink-850">
             {items.map((item) => (
-              <div key={item.id} className="flex flex-wrap items-center gap-3 p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-ink-100">{item.namePersian}</p>
-                  <p className="text-2xs text-ink-500">
-                    {item.category.namePersian}
-                    {' — '}
-                    <span className="tabular">
-                      {formatCurrency(item.sellingPrice?.toString() ?? '0', { symbol })}
-                    </span>
-                  </p>
+              <div key={item.id} className="space-y-3 p-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-ink-100">{item.namePersian}</p>
+                    <p className="text-2xs text-ink-500">
+                      {item.category.namePersian}
+                      {' — '}
+                      <span className="tabular">
+                        {formatCurrency(item.sellingPrice?.toString() ?? '0', { symbol })}
+                      </span>
+                    </p>
+                  </div>
+                  {item.availabilityManualOverrideAt && (
+                    <Badge tone="accent">دستی</Badge>
+                  )}
+                  <AvailabilityToggle
+                    menuItemId={item.id}
+                    availability={item.availability}
+                    autoSoldOut={item.autoSoldOut}
+                  />
                 </div>
-                {item.availabilityManualOverrideAt && (
-                  <Badge tone="accent">دستی</Badge>
-                )}
-                <AvailabilityToggle
+
+                <ImageUploader
                   menuItemId={item.id}
-                  availability={item.availability}
-                  autoSoldOut={item.autoSoldOut}
+                  itemName={item.namePersian}
+                  currentImageUrl={item.imageUrl}
+                  canEdit={canEditMenu}
                 />
               </div>
             ))}

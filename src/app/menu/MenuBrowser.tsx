@@ -176,8 +176,22 @@ export function MenuBrowser({ menu }: { menu: PublicMenu }) {
               {featured.map((item) => (
                 <article
                   key={item.id}
-                  className="w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-saffron-400/25 bg-gradient-to-br from-saffron-400/12 via-ink-900 to-ink-900 p-4"
+                  className="w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-saffron-400/25 bg-gradient-to-br from-saffron-400/12 via-ink-900 to-ink-900"
                 >
+                  {item.imageUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={item.imageUrl}
+                      alt={item.namePersian}
+                      loading="lazy"
+                      /* Width and height are declared so the row does not jump
+                         as photos load — a shifting menu is hard to tap. */
+                      width={240}
+                      height={150}
+                      className="h-32 w-full object-cover"
+                    />
+                  )}
+                  <div className="p-4">
                   <h3 className="font-bold text-ink-50">{item.namePersian}</h3>
                   {item.description && (
                     <p className="mt-1.5 line-clamp-2 text-2xs leading-5 text-ink-400">
@@ -187,6 +201,7 @@ export function MenuBrowser({ menu }: { menu: PublicMenu }) {
                   <p className="mt-3 tabular text-lg font-bold text-saffron-400">
                     {formatCurrency(item.price, { symbol })}
                   </p>
+                  </div>
                 </article>
               ))}
             </div>
@@ -240,7 +255,18 @@ export function MenuBrowser({ menu }: { menu: PublicMenu }) {
                   const isServed = item.isAvailable && category.isServingNow;
                   return (
                     <li key={item.id} className={`py-4 ${isServed ? '' : 'opacity-50'}`}>
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        {item.imageUrl && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={item.imageUrl}
+                            alt={item.namePersian}
+                            loading="lazy"
+                            width={80}
+                            height={80}
+                            className="size-20 shrink-0 rounded-xl object-cover"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <h3 className="font-semibold leading-snug text-ink-50">

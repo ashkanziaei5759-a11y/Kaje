@@ -45,10 +45,14 @@ fiction. Snapshots are written once and never recalculated.
 
 ## See it
 
-A live preview of the menu, with the real seeded data, runs at
-**https://claude.ai/code/artifact/4afa54ff-fb02-49d9-b5e5-92575e78f104** —
-open it on a phone to see what a diner sees, including the add-to-home-screen
-flow. The same page is checked in at `docs/menu-preview.html`.
+Two interactive previews, both running the real seeded figures:
+
+- **The diner's menu** — https://claude.ai/code/artifact/4afa54ff-fb02-49d9-b5e5-92575e78f104
+  (also `docs/menu-preview.html`). Open it on a phone to see the
+  add-to-home-screen flow.
+- **The admin panel** — https://claude.ai/code/artifact/8beca8fb-39fc-4322-83ed-89eec1c5c1c6
+  (also `docs/admin-preview.html`). Change an ingredient price and watch the
+  cost recompute; add a raw material; pick a dish photo.
 
 The menu is an installable PWA: on Android it offers a one-tap install, on iOS
 it shows the Share → Add to Home Screen route (iOS has no install API). Once
@@ -250,11 +254,15 @@ Deliberately out of scope for this stage, with the schema shaped to accept them:
   extraction is wired up.
 - **Excel and PDF export.** CSV is implemented for six reports; the other two
   formats are not.
-- **Write UI for most entities.** Ingredients, recipes, purchases, suppliers,
-  expenses and employees are fully modelled, seeded and readable, and the
-  services that mutate them are tested — but the admin screens are read-only
-  apart from menu prices and availability. The costing and inventory correctness
-  the brief asked to prioritise came first.
+- **Write UI for purchases, suppliers, expenses and employees.** All four are
+  fully modelled, seeded and readable, and the services that mutate them are
+  tested, but they have no create/edit screens yet. Ingredients, recipes
+  (through the cost builder), menu prices, availability and dish photos are all
+  editable.
+- **Photo storage assumes a persistent disk.** Uploads are written to
+  `public/uploads`. That works on a VPS or container with a volume; a
+  serverless deployment needs object storage (Vercel Blob, S3) instead — only
+  `src/server/services/images.ts` changes.
 
 ---
 

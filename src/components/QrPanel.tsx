@@ -91,7 +91,13 @@ export function QrPanel({
 
       {/* White plate: a QR on a dark ground fails on many phone scanners. */}
       <div className="mt-4 rounded-xl bg-white p-4">
-        <div className="mx-auto w-full max-w-[15rem]" dangerouslySetInnerHTML={{ __html: svg }} />
+        {/* The generated SVG carries its own 512px width/height, which overflows
+            this container and spills over the page. Constrain the injected
+            element itself rather than only its wrapper. */}
+        <div
+          className="mx-auto w-full max-w-[15rem] [&>svg]:h-auto [&>svg]:w-full [&>svg]:max-w-full"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
       </div>
 
       <div className="mt-3 rounded-lg border border-ink-800 bg-ink-850 p-2.5">

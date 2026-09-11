@@ -1,0 +1,619 @@
+<title>پنل کاژه</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Same ink-and-saffron system as the product, because this preview IS the
+     product's own screens — a different palette would misrepresent them.
+     Single-theme by choice; the panel is dark by design. */
+  :root{
+    --ink-950:#0A0C10; --ink-900:#12151C; --ink-850:#171C25; --ink-800:#212936;
+    --ink-700:#2E3849; --ink-600:#3E4A5C; --ink-500:#66748A; --ink-400:#8B98AB;
+    --ink-300:#B4BECD; --ink-100:#E4E9F0; --ink-50:#F5F8FC;
+    --saffron:#E8A33D; --saffron-lt:#F5C579; --saffron-dk:#B4761B;
+    --pistachio:#7FB069; --pomegranate:#C2413D;
+    --fa:'Vazirmatn',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--ink-950);
+    background-image:radial-gradient(120% 80% at 50% -10%,#1A2130 0%,#0A0C10 55%);
+    background-attachment:fixed;
+    color:var(--ink-100);font-family:var(--fa);line-height:1.7;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  .tab{font-variant-numeric:tabular-nums}
+  :focus-visible{outline:2px solid var(--saffron);outline-offset:3px;border-radius:6px}
+  button,input,select{font-family:inherit;touch-action:manipulation}
+
+  header.top{padding:52px 0 6px;text-align:center}
+  .mark{width:54px;height:54px;margin:0 auto;display:grid;place-items:center;
+    background:var(--saffron);color:var(--ink-950);border-radius:16px;font-size:27px;font-weight:800;
+    box-shadow:0 12px 40px -8px rgba(232,163,61,.5)}
+  .kick{font-family:var(--mono);font-size:11px;letter-spacing:.34em;color:var(--saffron);margin-top:12px}
+  header.top h1{margin:14px 0 8px;font-size:clamp(26px,4.4vw,38px);font-weight:800;
+    letter-spacing:-.02em;text-wrap:balance;color:var(--ink-50)}
+  header.top p{margin:0 auto;max-width:46ch;color:var(--ink-400);font-size:15px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:34px 0 20px}
+  .tabbtn{min-height:44px;padding:0 18px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--ink-800);background:var(--ink-900);color:var(--ink-300);
+    font-size:13px;font-weight:500;transition:all .18s ease}
+  .tabbtn:hover{border-color:var(--ink-600);color:var(--ink-100)}
+  .tabbtn[aria-selected="true"]{background:var(--saffron);border-color:var(--saffron);
+    color:var(--ink-950);font-weight:700}
+
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--ink-900);border:1px solid var(--ink-800);border-radius:14px}
+  .lbl{font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--ink-400);
+    text-transform:uppercase;display:block;margin-bottom:6px}
+
+  /* Cost builder */
+  .builder{display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:16px;align-items:start}
+  @media(max-width:960px){.builder{grid-template-columns:1fr}}
+
+  .sect{padding:16px}
+  .sect h2{margin:0 0 3px;font-size:14px;font-weight:600;color:var(--ink-100)}
+  .sect .sub{margin:0 0 14px;font-size:12px;color:var(--ink-500)}
+
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:560px}
+  th{padding:9px 8px;text-align:right;font-size:10px;font-weight:600;letter-spacing:.04em;
+    color:var(--ink-400);text-transform:uppercase;white-space:nowrap;
+    border-bottom:1px solid var(--ink-800)}
+  td{padding:10px 8px;font-size:13px;color:var(--ink-200);border-bottom:1px solid var(--ink-850)}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;background:var(--ink-800);border-radius:5px;padding:2px 6px;
+    font-size:10px;color:var(--ink-400);margin-inline-start:6px}
+
+  .num{height:38px;border-radius:9px;border:1px solid var(--ink-700);background:var(--ink-850);
+    color:var(--ink-50);padding:0 8px;text-align:left;direction:ltr;font-size:12px;
+    font-variant-numeric:tabular-nums;transition:border-color .15s ease}
+  .num:focus{border-color:var(--saffron);outline:none}
+  .num:focus-visible{box-shadow:0 0 0 2px var(--saffron)}
+  .w-qty{width:74px}.w-price{width:112px}.w-yld{width:56px}
+  .unit{font-size:10px;color:var(--ink-600);margin-inline-start:4px}
+
+  /* Result rail */
+  .rail{position:sticky;top:16px}
+  .rail .head{padding:14px 16px;border-bottom:1px solid var(--ink-800);
+    display:flex;justify-content:space-between;align-items:center}
+  .rail .head h2{margin:0;font-size:14px;font-weight:600;color:var(--ink-100)}
+  .state{font-size:11px;color:var(--ink-600)}
+  .state.live{color:var(--saffron)}
+  .rail .body{padding:16px}
+  .big{font-size:28px;font-weight:800;margin:6px 0 0;color:var(--ink-50)}
+  .big .cur{font-size:14px;font-weight:400;color:var(--ink-500);margin-inline-start:6px}
+
+  .bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--ink-850);margin:14px 0 10px}
+  .bar>i{display:block;transition:width .45s cubic-bezier(.2,.8,.3,1)}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:var(--ink-400)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend b{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  dl{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--ink-800);display:grid;gap:8px}
+  .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .row dt{font-size:11px;color:var(--ink-400)}
+  .row dd{margin:0;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink-100)}
+  .was{font-size:10px;color:var(--ink-600);text-decoration:line-through;margin-inline-end:6px}
+  .up{color:var(--pomegranate);font-weight:600}
+  .down{color:var(--pistachio);font-weight:600}
+
+  .warn{margin-top:12px;border-radius:9px;padding:9px 11px;font-size:11px;line-height:1.75}
+  .warn.bad{border:1px solid rgba(194,65,61,.35);background:rgba(194,65,61,.1);color:#E08A86}
+  .warn.mid{border:1px solid rgba(232,163,61,.35);background:rgba(232,163,61,.1);color:var(--saffron-lt)}
+
+  .btn{min-height:42px;padding:0 16px;border-radius:11px;cursor:pointer;border:0;
+    font-size:13px;font-weight:700;font-family:var(--fa);transition:background .16s ease}
+  .btn-p{background:var(--saffron);color:var(--ink-950);width:100%}
+  .btn-p:hover{background:var(--saffron-lt)}
+  .btn-g{background:var(--ink-800);color:var(--ink-100);border:1px solid var(--ink-700)}
+  .btn-g:hover{background:var(--ink-700)}
+
+  /* Sliders row */
+  .knobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+
+  /* Ingredient form */
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .txt{height:42px;width:100%;border-radius:9px;border:1px solid var(--ink-700);
+    background:var(--ink-850);color:var(--ink-50);padding:0 11px;font-size:13px}
+  .txt:focus{border-color:var(--saffron);outline:none}
+  select.txt{cursor:pointer}
+  .hint{margin:5px 0 0;font-size:11px;color:var(--ink-500);line-height:1.6}
+  .check{margin-top:14px;border:1px solid var(--ink-700);background:var(--ink-850);
+    border-radius:10px;padding:12px}
+  .check .v{font-size:13px;color:var(--ink-300);line-height:1.9}
+  .check strong{color:var(--saffron);font-variant-numeric:tabular-nums}
+
+  /* Photo rows */
+  .photorow{display:flex;align-items:flex-start;gap:12px;padding:14px 0;
+    border-bottom:1px solid var(--ink-850)}
+  .photorow:last-child{border-bottom:0}
+  .thumb{width:74px;height:74px;flex:0 0 auto;border-radius:12px;overflow:hidden;
+    border:1px solid var(--ink-700);background:var(--ink-850);display:grid;place-items:center}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .pickbtn{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 15px;
+    border-radius:11px;background:var(--saffron);color:var(--ink-950);
+    font-size:12px;font-weight:700;border:0;cursor:pointer}
+  .pickbtn:hover{background:var(--saffron-lt)}
+  .delbtn{min-height:42px;padding:0 13px;border-radius:11px;background:transparent;
+    border:1px solid var(--ink-700);color:var(--ink-400);font-size:12px;cursor:pointer}
+  .delbtn:hover{border-color:var(--pomegranate);color:var(--pomegranate)}
+
+  .sheet{margin-top:12px;border:1px solid var(--ink-700);border-radius:12px;
+    background:var(--ink-850);padding:4px;display:none}
+  .sheet.on{display:block;animation:fade .22s ease}
+  .sheet button{display:flex;align-items:center;gap:10px;width:100%;background:transparent;
+    border:0;color:var(--ink-100);font-size:13px;padding:12px 12px;border-radius:9px;
+    cursor:pointer;text-align:start}
+  .sheet button:hover{background:var(--ink-800)}
+  .sheet button+button{border-top:1px solid var(--ink-800)}
+  .sheet .ic{width:20px;height:20px;color:var(--saffron);flex:0 0 auto}
+
+  .note{margin-top:28px;border-inline-start:2px solid var(--saffron-dk);padding-inline-start:14px}
+  .note h3{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink-50)}
+  .note p{margin:0;font-size:12px;color:var(--ink-400);line-height:1.85}
+
+  footer{margin-top:46px;padding:24px 0 56px;border-top:1px solid var(--ink-800);
+    color:var(--ink-500);font-size:12px;line-height:1.9}
+  code{font-family:var(--mono);font-size:11px;background:var(--ink-900);
+    border:1px solid var(--ink-800);border-radius:5px;padding:2px 6px;color:var(--ink-300)}
+
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div dir="rtl" lang="fa">
+<div class="wrap">
+  <header class="top">
+    <div class="mark">ک</div>
+    <div class="kick">KAJEH · ADMIN</div>
+    <h1>پنل کاژه — قابل استفاده، نه فقط قابل دیدن</h1>
+    <p>
+      اعداد را عوض کنید و ببینید قیمت تمام‌شده چطور جابه‌جا می‌شود. همان رفتاری
+      که در برنامه واقعی دارید.
+    </p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tabbtn" role="tab" aria-selected="true" data-tab="cost">ساخت قیمت</button>
+    <button class="tabbtn" role="tab" aria-selected="false" data-tab="ing">افزودن ماده اولیه</button>
+    <button class="tabbtn" role="tab" aria-selected="false" data-tab="photo">عکس غذاها</button>
+  </div>
+
+  <!-- ─────────── COST BUILDER ─────────── -->
+  <section class="panel on" id="tab-cost" role="tabpanel">
+    <div class="builder">
+      <div style="min-width:0;display:grid;gap:16px">
+        <div class="card sect">
+          <h2>مواد اولیه و مقادیر — برگر مخصوص کاژه</h2>
+          <p class="sub">قیمت خرید یا مقدار را عوض کنید؛ ستون سمت چپ بلافاصله دوباره حساب می‌شود.</p>
+          <div class="tblwrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>جزء</th><th>مقدار</th><th>قیمت خرید</th><th>بازده</th><th>هزینه</th>
+                </tr>
+              </thead>
+              <tbody id="lines"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card sect">
+          <h2>نیروی کار و قواعد قیمت‌گذاری</h2>
+          <p class="sub">این‌ها روی همه آیتم‌های این پروفایل اثر می‌گذارند.</p>
+          <div class="knobs">
+            <div>
+              <label class="lbl" for="mins">زمان آماده‌سازی و پخت</label>
+              <input class="num" id="mins" type="number" inputmode="numeric" value="27" min="0" style="width:100%">
+              <p class="hint">دقیقه</p>
+            </div>
+            <div>
+              <label class="lbl" for="rate">هزینه هر دقیقه کار</label>
+              <input class="num" id="rate" type="number" inputmode="numeric" value="2000" step="100" min="0" style="width:100%">
+              <p class="hint">تومان</p>
+            </div>
+            <div>
+              <label class="lbl" for="ovh">سربار هر پرس</label>
+              <input class="num" id="ovh" type="number" inputmode="numeric" value="30000" step="1000" min="0" style="width:100%">
+              <p class="hint">۳۰۰ میلیون ماهانه ÷ ۱۰٬۰۰۰ پرس</p>
+            </div>
+            <div>
+              <label class="lbl" for="margin">هدف حاشیه سود</label>
+              <input class="num" id="margin" type="number" inputmode="decimal" value="35" step="1" min="0" max="95" style="width:100%">
+              <p class="hint">درصد — قیمت = تمام‌شده ÷ (۱ − حاشیه)</p>
+            </div>
+            <div>
+              <label class="lbl" for="price">قیمت فروش</label>
+              <input class="num" id="price" type="number" inputmode="numeric" value="965000" step="5000" min="0" style="width:100%">
+              <p class="hint">تومان</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card rail">
+        <div class="head">
+          <h2>نتیجه محاسبه</h2>
+          <span class="state" id="state">ذخیره‌شده</span>
+        </div>
+        <div class="body">
+          <span class="lbl">قیمت تمام‌شده هر پرس</span>
+          <p class="big"><span class="tab" id="total">۶۲۶٬۴۲۸</span><span class="cur">تومان</span></p>
+
+          <div class="bar" id="bar"></div>
+          <div class="legend" id="legend"></div>
+
+          <dl>
+            <div class="row"><dt>مواد اولیه</dt><dd id="r-food"></dd></div>
+            <div class="row"><dt>نیروی کار</dt><dd id="r-labor"></dd></div>
+            <div class="row"><dt>سربار</dt><dd id="r-ovh"></dd></div>
+          </dl>
+          <dl>
+            <div class="row"><dt>سود ناخالص</dt><dd id="r-profit"></dd></div>
+            <div class="row"><dt>حاشیه سود</dt><dd id="r-margin"></dd></div>
+            <div class="row"><dt>درصد مواد اولیه</dt><dd id="r-fcp"></dd></div>
+            <div class="row"><dt>قیمت پیشنهادی</dt><dd id="r-rec"></dd></div>
+          </dl>
+
+          <div id="alert"></div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--ink-800)">
+            <button class="btn btn-p" id="save">ذخیره تغییرات</button>
+            <p class="hint" style="margin-top:9px">
+              در برنامه واقعی، این محاسبه روی سرور و با همان موتوری انجام می‌شود
+              که هنگام ذخیره اجرا می‌شود — پس عددی که تأیید می‌کنید دقیقاً همان
+              عددی است که ثبت می‌شود.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="note">
+      <h3>چرا محاسبه روی سرور؟</h3>
+      <p>
+        اگر ریاضیات را در مرورگر می‌نوشتیم، دو پیاده‌سازی از قواعد قیمت‌گذاری داشتیم
+        که با هر تغییر از هم فاصله می‌گرفتند. این پیش‌نمایش برای نمایش، محاسبه را
+        در مرورگر انجام می‌دهد؛ برنامه واقعی این کار را نمی‌کند.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────── NEW INGREDIENT ─────────── -->
+  <section class="panel" id="tab-ing" role="tabpanel">
+    <div class="card sect">
+      <h2>ماده اولیه جدید</h2>
+      <p class="sub">واحد خرید و واحد مصرف را مشخص کنید تا سیستم قیمت هر پرس را بتواند حساب کند.</p>
+
+      <div class="grid3">
+        <div>
+          <label class="lbl" for="i-name">نام ماده اولیه</label>
+          <input class="txt" id="i-name" type="text" value="گوشت گوساله" autocomplete="off">
+        </div>
+        <div>
+          <label class="lbl" for="i-cat">دسته</label>
+          <select class="txt" id="i-cat">
+            <option>گوشت قرمز</option><option>مرغ و طیور</option><option>لبنیات</option>
+            <option>سبزیجات</option><option>غلات</option><option>ادویه</option>
+            <option>بسته‌بندی</option><option selected>سایر</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="i-sup">تأمین‌کننده (اختیاری)</label>
+          <select class="txt" id="i-sup">
+            <option>انتخاب نشده</option><option selected>پروتئین تهران</option>
+            <option>سبزی و صیفی بهار</option><option>لبنیات پگاه</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="i-pu">واحد خرید</label>
+          <select class="txt" id="i-pu">
+            <option value="kg" selected>کیلوگرم</option><option value="g">گرم</option>
+            <option value="l">لیتر</option><option value="piece">عدد</option>
+          </select>
+          <p class="hint">همان واحدی که روی فاکتور نوشته می‌شود</p>
+        </div>
+        <div>
+          <label class="lbl" for="i-ru">واحد مصرف در دستور پخت</label>
+          <select class="txt" id="i-ru">
+            <option value="g" selected>گرم</option><option value="kg">کیلوگرم</option>
+            <option value="ml">میلی‌لیتر</option><option value="piece">عدد</option>
+          </select>
+          <p class="hint">همان واحدی که آشپز اندازه می‌گیرد</p>
+        </div>
+        <div>
+          <label class="lbl" for="i-cf">ضریب تبدیل</label>
+          <input class="num" id="i-cf" type="number" inputmode="numeric" value="1000" style="width:100%;height:42px">
+          <p class="hint" id="cf-hint">هر ۱ kg چند g است؟</p>
+        </div>
+        <div>
+          <label class="lbl" for="i-price">قیمت خرید هر واحد</label>
+          <input class="num" id="i-price" type="number" inputmode="numeric" value="1450000" step="1000" style="width:100%;height:42px">
+          <p class="hint">تومان</p>
+        </div>
+        <div>
+          <label class="lbl" for="i-yield">بازده مصرف</label>
+          <input class="num" id="i-yield" type="number" inputmode="numeric" value="82" min="1" max="100" style="width:100%;height:42px">
+          <p class="hint">چند درصدش بعد از پاک‌کردن می‌ماند؟</p>
+        </div>
+      </div>
+
+      <div class="check">
+        <span class="lbl">با این مقادیر</span>
+        <p class="v" id="i-check"></p>
+        <p class="hint">اگر این عدد منطقی نیست، ضریب تبدیل را بررسی کنید.</p>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn btn-p" style="width:auto">ثبت ماده اولیه</button>
+        <button class="btn btn-g">انصراف</button>
+      </div>
+    </div>
+
+    <div class="note">
+      <h3>چرا این بررسی زنده مهم است</h3>
+      <p>
+        ضریب تبدیل جایی است که همه اشتباه می‌کنند: شما کیلویی می‌خرید و گرمی
+        می‌پزید. به‌جای توضیح دادنش، فرم نتیجه را نشان می‌دهد — یک ضریب اشتباه
+        به‌صورت عددی بی‌معنی («۸۵۰٬۰۰۰ تومان برای هر گرم») دیده می‌شود، قبل از
+        اینکه ذخیره شود.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────── PHOTOS ─────────── -->
+  <section class="panel" id="tab-photo" role="tabpanel">
+    <div class="card sect">
+      <h2>عکس غذاها</h2>
+      <p class="sub">
+        عکس را از گالری گوشی انتخاب می‌کنید. روی دکمه بزنید تا ببینید روی موبایل
+        چه چیزی باز می‌شود.
+      </p>
+      <div id="photos"></div>
+    </div>
+
+    <div class="note">
+      <h3>عکس شما، نه عکس آرشیوی</h3>
+      <p>
+        دکمه فایل عمداً بدون <code>capture</code> ساخته شده — آن ویژگی دوربین را
+        اجباری می‌کند و گزینه گالری را حذف. بدون آن، گوشی هر سه گزینه را نشان
+        می‌دهد: گالری، دوربین، و فایل‌ها.
+      </p>
+    </div>
+
+    <div class="note">
+      <h3>هر عکس خودکار پردازش می‌شود</h3>
+      <p>
+        عکس ۴۰۳۲×۳۰۲۴ گوشی به ۱۴۰۰ پیکسل و فرمت WebP تبدیل می‌شود، و اطلاعات
+        EXIF حذف می‌شود — این فقط برای حجم نیست: عکس گوشی مختصات GPS دارد و
+        انتشارش روی منوی عمومی یعنی لو رفتن محل عکس‌برداری.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    این پیش‌نمایش، همان صفحه‌های واقعی پنل است. نسخه اجراشدنی روی
+    <code>/menu-items/[id]/cost</code>، <code>/ingredients</code> و
+    <code>/digital-menu</code> قرار دارد.
+  </footer>
+</div>
+</div>
+
+<script>
+const FA=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+const fa=s=>String(s).replace(/[0-9]/g,d=>FA[+d]);
+const money=n=>fa(Math.round(n).toLocaleString('en-US'));
+const pct=n=>fa((n*100).toFixed(1))+'٪';
+
+/* ── Tabs ── */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.setAttribute('aria-selected',String(b===btn)));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='tab-'+btn.dataset.tab));
+  };
+});
+
+/* ── Cost builder ──
+   Real BOM figures for the Kajeh burger, exported from the running app.
+   The preview computes in-browser for responsiveness; the product computes
+   server-side against the same engine that performs the save. */
+const LINES=[
+  {n:'برگر گوشت',      tag:'دستور میانی', qty:1,   unit:'piece', price:null,    yield:null, cost:384963},
+  {n:'نان همبرگر',     tag:null,          qty:1,   unit:'piece', price:22666,   yield:100,  per:22666},
+  {n:'سس مخصوص برگر',  tag:'دستور میانی', qty:35,  unit:'g',     price:null,    yield:null, cost:12864},
+  {n:'پنیر پیتزا',     tag:null,          qty:30,  unit:'g',     price:2021242, yield:100,  per:2021.242},
+  {n:'کاهو',           tag:null,          qty:25,  unit:'g',     price:135495,  yield:75,   per:135.495},
+  {n:'گوجه فرنگی',     tag:null,          qty:40,  unit:'g',     price:171564,  yield:90,   per:171.564},
+  {n:'خیارشور',        tag:null,          qty:20,  unit:'g',     price:218104,  yield:95,   per:218.104},
+  {n:'سیب‌زمینی',      tag:null,          qty:150, unit:'g',     price:89009,   yield:88,   per:89.009},
+  {n:'روغن آفتابگردان',tag:null,          qty:30,  unit:'ml',    price:439841,  yield:100,  per:439.841},
+  {n:'ظرف یکبار مصرف', tag:'بسته‌بندی',   qty:1,   unit:'piece', price:3297,    yield:100,  per:3297, pack:true},
+];
+/* Divisor turning a purchase-unit price into a recipe-unit price. */
+LINES.forEach(l=>{ if(l.price!=null) l.div = l.price / l.per; });
+
+const BASE={total:626428,food:528559,labor:54000,ovh:30000,pack:3297,price:965000,rec:965000};
+
+const tbody=document.getElementById('lines');
+tbody.innerHTML=LINES.map((l,i)=>`
+  <tr>
+    <td>${l.n}${l.tag?`<span class="pill">${l.tag}</span>`:''}</td>
+    <td><input class="num w-qty" type="number" inputmode="decimal" step="any" min="0"
+        value="${l.qty}" data-k="qty" data-i="${i}" aria-label="مقدار ${l.n}">
+        <span class="unit">${l.unit}</span></td>
+    <td>${l.price!=null
+      ? `<input class="num w-price" type="number" inputmode="numeric" step="1000" min="0"
+           value="${l.price}" data-k="price" data-i="${i}" aria-label="قیمت خرید ${l.n}">`
+      : '<span class="unit">—</span>'}</td>
+    <td>${l.yield!=null
+      ? `<input class="num w-yld" type="number" inputmode="numeric" min="1" max="100"
+           value="${l.yield}" data-k="yield" data-i="${i}" aria-label="بازده ${l.n}"><span class="unit">٪</span>`
+      : '<span class="unit">—</span>'}</td>
+    <td class="tab" id="c${i}"></td>
+  </tr>`).join('');
+
+const $=id=>document.getElementById(id);
+let dirty=false;
+
+function compute(){
+  let food=0, pack=0;
+  LINES.forEach((l,i)=>{
+    let cost;
+    if(l.price==null){
+      // Sub-recipe lines scale with quantity from their seeded per-unit cost.
+      cost = l.cost * (l.qty ? (Number($('lines').querySelector(`[data-i="${i}"][data-k="qty"]`).value)||0)/l.qty : 0);
+    }else{
+      const q = Number(document.querySelector(`[data-i="${i}"][data-k="qty"]`).value)||0;
+      const p = Number(document.querySelector(`[data-i="${i}"][data-k="price"]`).value)||0;
+      const y = (Number(document.querySelector(`[data-i="${i}"][data-k="yield"]`).value)||100)/100;
+      cost = q * (p / l.div) / y;
+    }
+    if(l.pack) pack+=cost; else food+=cost;
+    $('c'+i).textContent = money(cost);
+  });
+
+  food *= 1.02;                                   // the profile's 2% waste buffer
+  const labor = (Number($('mins').value)||0) * (Number($('rate').value)||0);
+  const ovh   = Number($('ovh').value)||0;
+  const total = food + pack + labor + ovh;
+  const price = Number($('price').value)||0;
+  const m     = (Number($('margin').value)||0)/100;
+  const rawRec= m<1 ? total/(1-m) : 0;
+  const rec   = Math.ceil(rawRec/5000)*5000;      // rounding always goes up
+  const profit= price-total;
+  const marginPct = price>0 ? profit/price : 0;
+
+  $('total').textContent = money(total);
+  $('state').textContent = dirty?'پیش‌نمایش':'ذخیره‌شده';
+  $('state').className = 'state'+(dirty?' live':'');
+
+  const seg=[
+    ['مواد اولیه', food,  'var(--ink-400)'],
+    ['نیروی کار',  labor, 'var(--ink-600)'],
+    ['بسته‌بندی',  pack,  'var(--ink-700)'],
+    ['سربار',      ovh,   'var(--ink-500)'],
+    [profit>=0?'سود':'زیان', Math.abs(profit), profit>=0?'var(--saffron)':'var(--pomegranate)'],
+  ];
+  const scale=Math.max(price,total)||1;
+  $('bar').innerHTML = seg.filter(s=>s[1]>0)
+    .map(s=>`<i style="width:${(s[1]/scale)*100}%;background:${s[2]}"></i>`).join('');
+  $('legend').innerHTML = seg.filter(s=>s[1]>0)
+    .map(s=>`<span><b style="background:${s[2]}"></b>${s[0]} ${fa(Math.round(s[1]/scale*100))}٪</span>`).join('');
+
+  const delta=(id,now,was,invert)=>{
+    const el=$(id), changed=Math.abs(now-was)>1;
+    const good = invert ? now<was : now>was;
+    el.innerHTML = changed
+      ? `<span class="was">${money(was)}</span><span class="${good?'down':'up'}">${money(now)}</span>`
+      : money(now);
+  };
+  delta('r-food', food, BASE.food, true);
+  delta('r-labor',labor,BASE.labor,true);
+  delta('r-ovh',  ovh,  BASE.ovh,  true);
+  delta('r-profit',profit,BASE.price-BASE.total,false);
+  delta('r-rec',  rec,  BASE.rec,  false);
+  $('r-margin').textContent = pct(marginPct);
+  $('r-margin').className = marginPct<=0?'up':marginPct<0.15?'':'down';
+  $('r-fcp').textContent = price>0?pct(food/price):'—';
+
+  $('alert').innerHTML =
+    profit<=0 ? `<p class="warn bad">با این تنظیمات هر پرس ${money(Math.abs(profit))} تومان زیان می‌دهد.</p>`
+    : marginPct<0.15 ? `<p class="warn mid">حاشیه سود از حداقل ۱۵٪ کمتر است. قیمت پیشنهادی: ${money(rec)} تومان.</p>`
+    : '';
+}
+
+document.querySelectorAll('.num').forEach(i=>{
+  i.addEventListener('input',()=>{ dirty=true; compute(); });
+});
+$('save').onclick=()=>{ dirty=false; BASE.food=BASE.food; compute();
+  $('save').textContent='ذخیره شد ✓';
+  setTimeout(()=>$('save').textContent='ذخیره تغییرات',1600); };
+compute();
+
+/* ── Ingredient form live check ── */
+function ingCheck(){
+  const pu=$('i-pu').value, ru=$('i-ru').value;
+  const cf=Number($('i-cf').value)||0, p=Number($('i-price').value)||0;
+  const y=(Number($('i-yield').value)||100)/100;
+  $('cf-hint').textContent=`هر ۱ ${pu} چند ${ru} است؟`;
+  if(!cf||!p){ $('i-check').textContent='قیمت و ضریب تبدیل را وارد کنید.'; return; }
+  const raw=p/cf, eff=raw/y;
+  $('i-check').innerHTML =
+    `هر <span class="tab">۱ ${ru}</span> این ماده <strong>${fa(eff.toFixed(2))} تومان</strong> تمام می‌شود` +
+    (y<1?` <span style="color:var(--ink-500)">(با احتساب ${fa($('i-yield').value)}٪ بازده؛ قیمت خام ${fa(raw.toFixed(2))})</span>`:'') + '.';
+}
+['i-pu','i-ru','i-cf','i-price','i-yield'].forEach(id=>{
+  $(id).addEventListener('input',ingCheck); $(id).addEventListener('change',ingCheck);
+});
+ingCheck();
+
+/* ── Photo picker ── */
+const DISHES=[
+  {n:'جوجه کباب',        c:'غذای اصلی', p:920000,  img:'#C9762E'},
+  {n:'برگر مخصوص کاژه',  c:'برگر',      p:965000,  img:null},
+  {n:'کشک بادمجان',      c:'پیش‌غذا',    p:555000,  img:null},
+];
+const ICON_IMG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+  style="width:26px;height:26px;color:var(--ink-600)" aria-hidden="true">
+  <rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.5"/>
+  <path d="m4 17 4.5-4.5a2 2 0 0 1 2.8 0L16 17"/></svg>`;
+const UP=`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/>
+  <path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>`;
+
+document.getElementById('photos').innerHTML = DISHES.map((d,i)=>`
+  <div class="photorow">
+    <div class="thumb" id="th${i}">${d.img
+      ? `<div style="width:100%;height:100%;background:linear-gradient(140deg,${d.img},#8A4A16)"></div>`
+      : ICON_IMG}</div>
+    <div style="min-width:0;flex:1">
+      <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink-50)">${d.n}</p>
+      <p style="margin:2px 0 10px;font-size:11px;color:var(--ink-500)">${d.c} — <span class="tab">${money(d.p)} تومان</span></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="pickbtn" data-pick="${i}">${UP}${d.img?'تغییر عکس':'انتخاب عکس از گالری'}</button>
+        ${d.img?`<button class="delbtn" data-del="${i}">حذف</button>`:''}
+      </div>
+      <div class="sheet" id="sh${i}">
+        <button data-take="${i}">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.2"/>
+            <path d="M9 7l1.2-2h3.6L15 7"/></svg>
+          انتخاب از گالری تصاویر
+        </button>
+        <button data-take="${i}">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          گرفتن عکس با دوربین
+        </button>
+        <button data-take="${i}">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg>
+          انتخاب از فایل‌ها
+        </button>
+      </div>
+      <p class="hint">از گالری گوشی یا دوربین. عکس خودکار فشرده و بهینه می‌شود — حداکثر ۱۲ مگابایت.</p>
+    </div>
+  </div>`).join('');
+
+const SWATCH=['#C9762E','#9A5B2B','#7E8B3C','#B3452F'];
+document.getElementById('photos').addEventListener('click',e=>{
+  const pick=e.target.closest('[data-pick]'), take=e.target.closest('[data-take]'),
+        del=e.target.closest('[data-del]');
+  if(pick){ const s=document.getElementById('sh'+pick.dataset.pick); s.classList.toggle('on'); }
+  if(take){
+    const i=take.dataset.take;
+    document.getElementById('sh'+i).classList.remove('on');
+    const th=document.getElementById('th'+i);
+    th.innerHTML=`<div style="width:100%;height:100%;background:linear-gradient(140deg,${SWATCH[i%4]},#7A3E12)"></div>`;
+    const btn=document.querySelector(`[data-pick="${i}"]`);
+    btn.innerHTML=UP+'تغییر عکس';
+  }
+  if(del){ const i=del.dataset.del;
+    document.getElementById('th'+i).innerHTML=ICON_IMG;
+    document.querySelector(`[data-pick="${i}"]`).innerHTML=UP+'انتخاب عکس از گالری';
+    del.remove(); }
+});
+</script>

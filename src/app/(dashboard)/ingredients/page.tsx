@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/auth/guard';
 import { prisma } from '@/lib/db';
 import { PageHeader, KpiCard, Badge, Table } from '@/components/ui';
 import { IngredientPriceEditor, type EditableIngredient } from '@/components/cost/IngredientPriceEditor';
+import { NewIngredientForm } from '@/components/cost/NewIngredientForm';
 import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
 import { formatCurrency, formatPercent, formatNumber, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
@@ -20,7 +21,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default async function IngredientsPage() {
   const user = await requireUser();
 
-  const [restaurant, ingredients, units] = await Promise.all([
+  const [restaurant, ingredients, units, suppliers] = await Promise.all([
     prisma.restaurant.findUnique({ where: { id: user.restaurantId } }),
     prisma.ingredient.findMany({
       where: { restaurantId: user.restaurantId },
@@ -32,10 +33,15 @@ export default async function IngredientsPage() {
       orderBy: [{ category: 'asc' }, { namePersian: 'asc' }],
     }),
     prisma.unitDefinition.findMany({ where: { restaurantId: user.restaurantId } }),
+    prisma.supplier.findMany({
+      where: { restaurantId: user.restaurantId, isActive: true },
+      orderBy: { namePersian: 'asc' },
+    }),
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
   const unitLabel = new Map(units.map((u) => [u.id, u.labelPersian]));
+  const canEditIngredients = hasPermission(user.permissions, PERMISSIONS.INGREDIENT_WRITE);
 
   const withYieldLoss = ingredients.filter((i) => Number(i.yieldPercent) < 1).length;
   const risen = ingredients.filter((i) => Number(i.priceHistory[0]?.changePercent ?? 0) > 0).length;
@@ -46,6 +52,16 @@ export default async function IngredientsPage() {
         title="مواد اولیه"
         subtitle="قیمت خرید، ضریب تبدیل واحد و بازده مصرف — پایه محاسبه قیمت تمام‌شده"
       />
+
+      {canEditIngredients && (
+        <div className="mb-4">
+          <NewIngredientForm
+            symbol={symbol}
+            units={units.map((u) => ({ id: u.id, code: u.code, label: u.labelPersian }))}
+            suppliers={suppliers.map((s) => ({ id: s.id, name: s.namePersian ?? s.name }))}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="تعداد اقلام" value={faDigits(ingredients.length)} />
@@ -71,7 +87,7 @@ export default async function IngredientsPage() {
         </div>
         <IngredientPriceEditor
           symbol={symbol}
-          canEdit={hasPermission(user.permissions, PERMISSIONS.INGREDIENT_WRITE)}
+          canEdit={canEditIngredients}
           ingredients={ingredients
             .filter((i) => i.isActive)
             .map((i): EditableIngredient => ({
