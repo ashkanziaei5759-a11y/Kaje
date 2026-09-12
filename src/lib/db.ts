@@ -15,8 +15,10 @@ import { PrismaClient } from '@prisma/client';
 // which is how the demo snapshot is built and tested locally.
 export const DEMO_MODE = process.env.KAJEH_DEMO === '1' || !process.env.DATABASE_URL;
 
-// The build-time snapshot; see scripts/build-demo-db.ts.
+// The build-time snapshot, and the committed SQL dump it is built from.
+// See scripts/build-demo-db.ts.
 export const DEMO_SNAPSHOT = 'prisma/demo-db.tar.gz';
+export const DEMO_DUMP = 'prisma/demo-dump.sql.gz';
 
 function createClient(): PrismaClient {
   if (!DEMO_MODE) {
@@ -42,8 +44,8 @@ function createDemoClient(): PrismaClient {
     : undefined;
 
   if (!loadDataDir) {
-    // No snapshot on disk: this is the build-time seeding run. Start empty and
-    // let scripts/build-demo-db.ts apply the migrations itself.
+    // No snapshot on disk: this is the build-time restore run, which loads the
+    // dump into the empty database itself.
     console.warn('[kajeh] demo mode with no snapshot — starting an empty PGlite database');
   }
 

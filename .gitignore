@@ -15,3 +15,6 @@ coverage/
 next-env.d.ts
 
 
+
+# Built from prisma/demo-dump.sql.gz at build time (npm run db:demo).
+prisma/demo-db.tar.gz
