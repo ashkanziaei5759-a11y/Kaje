@@ -138,14 +138,14 @@ export function NewIngredientForm({
     <form onSubmit={submit} className="card p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-ink-100">ماده اولیه جدید</h2>
-          <p className="mt-0.5 text-2xs text-ink-500">
+          <h2 className="text-sm font-semibold text-ink-800">ماده اولیه جدید</h2>
+          <p className="mt-0.5 text-2xs text-ink-600">
             واحد خرید و واحد مصرف را مشخص کنید تا سیستم بتواند قیمت هر پرس را حساب کند.
           </p>
         </div>
         <button
           type="button" onClick={() => setOpen(false)}
-          className="min-h-9 rounded-lg px-3 text-2xs text-ink-500 hover:bg-ink-800 hover:text-ink-200"
+          className="min-h-9 rounded-lg px-3 text-2xs text-ink-600 hover:bg-ink-200 hover:text-ink-700"
         >
           بستن
         </button>
@@ -163,9 +163,9 @@ export function NewIngredientForm({
             onChange={(e) => set('namePersian', e.target.value)}
             placeholder="مثلاً گوشت گوساله…"
             aria-invalid={errorField === 'namePersian' ? true : undefined}
-            className="h-11 w-full rounded-lg border border-ink-700 bg-ink-850 px-3 text-sm
-                       text-ink-50 placeholder:text-ink-600
-                       focus-visible:ring-2 focus-visible:ring-saffron-400 focus:border-saffron-400 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-ink-300 bg-ink-100 px-3 text-sm
+                       text-ink-900 placeholder:text-ink-400
+                       focus-visible:ring-2 focus-visible:ring-forest-500 focus:border-forest-500 focus:outline-none"
           />
         </Field>
 
@@ -242,23 +242,23 @@ export function NewIngredientForm({
 
       {/* The live check that catches a wrong conversion factor. */}
       {price > 0 && factor > 0 && (
-        <div className="mt-4 rounded-lg border border-ink-700 bg-ink-850 p-3">
+        <div className="mt-4 rounded-lg border border-ink-300 bg-ink-100 p-3">
           <p className="label mb-1.5">با این مقادیر</p>
-          <p className="text-2xs leading-6 text-ink-300">
-            هر <span className="tabular text-ink-100">۱ {recipeCode}</span> این ماده{' '}
-            <span className="tabular font-semibold text-saffron-400">
+          <p className="text-2xs leading-6 text-ink-600">
+            هر <span className="tabular text-ink-800">۱ {recipeCode}</span> این ماده{' '}
+            <span className="tabular font-semibold text-forest-500">
               {formatCurrency(effective, { symbol, decimals: 2 })}
             </span>{' '}
             تمام می‌شود
             {yieldFraction < 1 && (
-              <span className="text-ink-500">
+              <span className="text-ink-600">
                 {' '}(با احتساب {faDigits(form.yieldPercent)}٪ بازده؛ قیمت خام{' '}
                 {formatCurrency(perRecipeUnit, { decimals: 2 })})
               </span>
             )}
             .
           </p>
-          <p className="mt-1.5 text-2xs text-ink-600">
+          <p className="mt-1.5 text-2xs text-ink-400">
             اگر این عدد منطقی نیست، ضریب تبدیل را بررسی کنید.
           </p>
         </div>

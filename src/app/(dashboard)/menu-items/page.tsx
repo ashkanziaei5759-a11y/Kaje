@@ -65,8 +65,8 @@ export default async function MenuItemsPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h2 className="truncate font-semibold text-ink-50">{item.namePersian}</h2>
-                    <p className="mt-0.5 text-2xs text-ink-500">{category?.namePersian}</p>
+                    <h2 className="truncate font-semibold text-ink-900">{item.namePersian}</h2>
+                    <p className="mt-0.5 text-2xs text-ink-600">{category?.namePersian}</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     {item.isUnprofitable ? (
@@ -91,19 +91,19 @@ export default async function MenuItemsPage() {
                   symbol={symbol}
                 />
 
-                <dl className="grid grid-cols-3 gap-2 pt-1 border-t border-ink-850">
+                <dl className="grid grid-cols-3 gap-2 pt-1 border-t border-ink-100">
                   <div>
                     <dt className="label">تمام‌شده</dt>
-                    <dd className="mt-0.5 text-sm tabular text-ink-200">
+                    <dd className="mt-0.5 text-sm tabular text-ink-700">
                       {formatCurrency(item.totalCost, { compact: true })}
                     </dd>
                   </div>
                   <div>
                     <dt className="label">فروش</dt>
-                    <dd className="mt-0.5 text-sm tabular font-semibold text-ink-50">
+                    <dd className="mt-0.5 text-sm tabular font-semibold text-ink-900">
                       {formatCurrency(item.sellingPrice, { compact: true })}
                       {info?.priceIsOverridden && (
-                        <span className="mr-1 text-2xs font-normal text-saffron-400">دستی</span>
+                        <span className="mr-1 text-2xs font-normal text-forest-500">دستی</span>
                       )}
                     </dd>
                   </div>
@@ -111,7 +111,7 @@ export default async function MenuItemsPage() {
                     <dt className="label">پیشنهادی</dt>
                     <dd
                       className={`mt-0.5 text-sm tabular ${
-                        gap > 1000 ? 'text-saffron-400' : 'text-ink-400'
+                        gap > 1000 ? 'text-forest-500' : 'text-ink-600'
                       }`}
                     >
                       {formatCurrency(item.recommendedPrice, { compact: true })}
@@ -124,10 +124,10 @@ export default async function MenuItemsPage() {
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">مقایسه کامل</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">مقایسه کامل</h2>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">آیتم</th>
               <th className="th">مواد اولیه</th>
               <th className="th">نیروی کار</th>
@@ -140,29 +140,29 @@ export default async function MenuItemsPage() {
               <th className="th">مواد اولیه٪</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {costed.map((item) => (
-              <tr key={item.menuItemId} className="hover:bg-ink-850/50 transition-colors">
+              <tr key={item.menuItemId} className="hover:bg-ink-100/50 transition-colors">
                 <td className="td">
-                  <Link href={`/menu-items/${item.menuItemId}`} className="hover:text-saffron-400">
+                  <Link href={`/menu-items/${item.menuItemId}`} className="hover:text-forest-500">
                     {item.namePersian}
                   </Link>
                 </td>
-                <td className="td tabular text-ink-400">
+                <td className="td tabular text-ink-600">
                   {formatCurrency(Number(item.ingredientCost) + Number(item.subRecipeCost), { compact: true })}
                 </td>
-                <td className="td tabular text-ink-400">{formatCurrency(item.laborCost, { compact: true })}</td>
-                <td className="td tabular text-ink-400">{formatCurrency(item.packagingCost, { compact: true })}</td>
-                <td className="td tabular text-ink-400">{formatCurrency(item.overheadCost, { compact: true })}</td>
-                <td className="td tabular text-ink-100 font-medium">{formatCurrency(item.totalCost, { compact: true })}</td>
-                <td className="td tabular text-ink-50 font-semibold">{formatCurrency(item.sellingPrice, { compact: true })}</td>
+                <td className="td tabular text-ink-600">{formatCurrency(item.laborCost, { compact: true })}</td>
+                <td className="td tabular text-ink-600">{formatCurrency(item.packagingCost, { compact: true })}</td>
+                <td className="td tabular text-ink-600">{formatCurrency(item.overheadCost, { compact: true })}</td>
+                <td className="td tabular text-ink-800 font-medium">{formatCurrency(item.totalCost, { compact: true })}</td>
+                <td className="td tabular text-ink-900 font-semibold">{formatCurrency(item.sellingPrice, { compact: true })}</td>
                 <td className={`td tabular ${Number(item.grossProfit) > 0 ? 'text-pistachio-400' : 'text-pomegranate-400'}`}>
                   {formatCurrency(item.grossProfit, { compact: true })}
                 </td>
-                <td className={`td tabular ${item.isUnprofitable ? 'text-pomegranate-400' : item.isBelowMinimumMargin ? 'text-saffron-400' : 'text-pistachio-400'}`}>
+                <td className={`td tabular ${item.isUnprofitable ? 'text-pomegranate-400' : item.isBelowMinimumMargin ? 'text-forest-500' : 'text-pistachio-400'}`}>
                   {formatPercent(item.grossMarginPct)}
                 </td>
-                <td className="td tabular text-ink-400">{formatPercent(item.foodCostPct)}</td>
+                <td className="td tabular text-ink-600">{formatPercent(item.foodCostPct)}</td>
               </tr>
             ))}
           </tbody>

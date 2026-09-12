@@ -4,67 +4,127 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @layer base {
   html {
-    /* Persian numerals everywhere the browser will honour them. */
     font-feature-settings: 'ss01', 'ss02';
+    -webkit-text-size-adjust: 100%;
   }
+
+  /*
+   * The ground the glass refracts.
+   *
+   * Glassmorphism only reads as glass when there is something behind it worth
+   * blurring — over a flat fill it just looks like a translucent grey box. Two
+   * soft colour blooms (forest and azure) sit behind everything and are what
+   * every panel picks up.
+   */
   body {
-    @apply bg-ink-950 text-ink-100 font-sans antialiased;
+    @apply bg-ink-50 text-ink-800 font-sans antialiased;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(52rem 38rem at 8% -6%, rgba(30, 138, 90, 0.38), transparent 60%),
+      radial-gradient(44rem 32rem at 96% 2%, rgba(46, 132, 228, 0.32), transparent 58%),
+      radial-gradient(46rem 36rem at 62% 104%, rgba(19, 98, 64, 0.26), transparent 60%),
+      radial-gradient(30rem 26rem at 40% 42%, rgba(99, 165, 239, 0.14), transparent 65%);
+    background-attachment: fixed;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
-  /* Financial figures must align on the decimal point in every table. */
+
   .tabular {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
+
   :focus-visible {
-    @apply outline-none ring-2 ring-saffron-400 ring-offset-2 ring-offset-ink-950;
+    @apply outline-none ring-2 ring-forest-500 ring-offset-2 ring-offset-ink-50;
   }
+
   ::selection {
-    @apply bg-saffron-400/30;
+    @apply bg-forest-200/60;
   }
-  /* A quiet scrollbar; the data is the loud part. */
+
+  /* Removes the ~300ms wait before a tap registers, without disabling
+     pinch-zoom on the page. */
+  button, a, input, select, textarea, [role='button'] {
+    touch-action: manipulation;
+  }
+
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { @apply bg-ink-900; }
-  ::-webkit-scrollbar-thumb { @apply bg-ink-700 rounded-full border-2 border-ink-900; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-ink-600; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-transparent bg-ink-300;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-ink-400; background-clip: content-box; }
 }
 
 @layer components {
+  /*
+   * The glass panel.
+   *
+   * White at 72%, not the 15–30% the style is usually shown with. This is a
+   * data-dense admin panel: at 20% opacity the coloured ground bleeds through
+   * and small dark text drops under the 4.5:1 contrast floor. 72% still reads
+   * clearly as frosted glass — the blooms behind it stay visible as soft tint —
+   * while keeping every figure legible.
+   */
   .card {
-    @apply bg-ink-900 border border-ink-800 rounded-xl;
+    @apply rounded-2xl border border-white/70 bg-white/[0.62] shadow-glass;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
   }
+
+  /* A lighter pane for nested surfaces, so glass does not stack on glass and
+     turn opaque. */
+  .card-inset {
+    @apply rounded-xl border border-white/60 bg-white/[0.38];
+  }
+
   .card-hover {
-    @apply transition-colors hover:border-ink-700;
+    @apply transition-[border-color,box-shadow,transform] duration-200;
   }
+  .card-hover:hover {
+    @apply border-white/90 shadow-glass-lg;
+  }
+
   .label {
-    @apply text-2xs font-medium tracking-wide text-ink-400 uppercase;
+    @apply text-2xs font-semibold uppercase tracking-wide text-ink-600;
   }
+
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
-           text-sm font-medium transition-colors disabled:opacity-50
-           disabled:cursor-not-allowed;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4
+           text-sm font-semibold transition-all duration-200
+           disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-saffron-400 text-ink-950 hover:bg-saffron-300;
+    @apply btn bg-forest-600 text-white shadow-[0_4px_14px_-4px_rgba(19,98,64,0.5)]
+           hover:bg-forest-500 active:scale-[0.98];
   }
   .btn-ghost {
-    @apply btn bg-ink-800 text-ink-100 hover:bg-ink-700;
+    @apply btn border border-white/70 bg-white/[0.5] text-ink-700
+           hover:bg-white/80 hover:text-ink-900;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
+
   .input {
-    @apply w-full rounded-lg bg-ink-850 border border-ink-700 px-3 py-2 text-sm
-           text-ink-50 placeholder:text-ink-500
-           focus:border-saffron-400 focus:outline-none;
+    @apply h-11 w-full rounded-xl border border-white/70 bg-white/60 px-3 text-sm
+           text-ink-900 placeholder:text-ink-400
+           transition-colors focus:border-forest-400 focus:bg-white/[0.85] focus:outline-none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
+
   .th {
-    @apply px-4 py-3 text-right text-2xs font-semibold uppercase tracking-wide
-           text-ink-400 whitespace-nowrap;
+    @apply whitespace-nowrap px-4 py-3 text-right text-2xs font-semibold
+           uppercase tracking-wide text-ink-600;
   }
   .td {
-    @apply px-4 py-3 text-sm text-ink-200 whitespace-nowrap;
+    @apply whitespace-nowrap px-4 py-3 text-sm text-ink-700;
   }
 }
 
@@ -73,27 +133,21 @@
   to   { transform: translateY(0);    opacity: 1; }
 }
 
-@layer base {
-  /* Installed as an app, the menu draws behind the status bar; these keep
-     content clear of the notch and the home indicator. */
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  /* Stop iOS inflating text in landscape, which breaks the price alignment. */
-  html { -webkit-text-size-adjust: 100%; }
-
-  /* Removes the ~300ms wait mobile browsers add before firing a tap, in case
-     it turns into a double-tap zoom. Applied to controls only, so pinch-zoom
-     on the page itself still works. */
-  button, a, input, select, textarea, [role='button'] {
-    touch-action: manipulation;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/*
+ * backdrop-filter is well supported but not universal. Where it is missing the
+ * translucent fills would let the coloured ground show straight through and
+ * destroy text contrast, so those surfaces fall back to solid white.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card { @apply bg-white/95; }
+  .card-inset { @apply bg-white/80; }
+  .btn-ghost { @apply bg-white/90; }
+  .input { @apply bg-white/90; }
 }

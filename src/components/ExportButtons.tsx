@@ -11,8 +11,8 @@ const REPORTS = [
 
 export function ExportButtons({ range }: { range: string }) {
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-1">
-      <span className="px-2 text-2xs text-ink-500">خروجی CSV</span>
+    <div className="flex items-center gap-1 rounded-lg border border-ink-200 bg-ink-0 p-1">
+      <span className="px-2 text-2xs text-ink-600">خروجی CSV</span>
       <select
         onChange={(e) => {
           if (!e.target.value) return;
@@ -21,7 +21,7 @@ export function ExportButtons({ range }: { range: string }) {
         }}
         defaultValue=""
         aria-label="انتخاب گزارش برای دریافت خروجی"
-        className="rounded-md bg-ink-850 px-2 py-1.5 text-2xs text-ink-200 border border-ink-700 focus:border-saffron-400 focus:outline-none"
+        className="rounded-md bg-ink-100 px-2 py-1.5 text-2xs text-ink-700 border border-ink-300 focus:border-forest-500 focus:outline-none"
       >
         <option value="" disabled>انتخاب گزارش…</option>
         {REPORTS.map(([value, label]) => (

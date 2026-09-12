@@ -113,27 +113,27 @@ export default async function DashboardPage({
       <div className="mt-6 grid lg:grid-cols-3 gap-4">
         <section className="lg:col-span-2 card p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-ink-100">فروش، هزینه و سود روزانه</h2>
+            <h2 className="text-sm font-semibold text-ink-800">فروش، هزینه و سود روزانه</h2>
             <Badge tone="neutral">{formatJalali(range.from, 'short')} — {formatJalali(range.to, 'short')}</Badge>
           </div>
           <RevenueChart data={series} />
         </section>
 
         <section className="card p-4">
-          <h2 className="text-sm font-semibold text-ink-100 mb-3">هشدارها</h2>
+          <h2 className="text-sm font-semibold text-ink-800 mb-3">هشدارها</h2>
           {data.alerts.length === 0 ? (
-            <p className="text-2xs text-ink-500 py-6 text-center">هشدار باز وجود ندارد.</p>
+            <p className="text-2xs text-ink-600 py-6 text-center">هشدار باز وجود ندارد.</p>
           ) : (
             <ul className="space-y-2 max-h-80 overflow-y-auto">
               {data.alerts.map((alert) => (
-                <li key={alert.id} className="rounded-lg border border-ink-800 bg-ink-850 p-2.5">
+                <li key={alert.id} className="rounded-lg border border-ink-200 bg-ink-100 p-2.5">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-2xs font-semibold text-ink-100">{alert.title}</p>
+                    <p className="text-2xs font-semibold text-ink-800">{alert.title}</p>
                     <Badge tone={alert.severity === 'CRITICAL' ? 'negative' : 'warning'}>
                       {alert.severity === 'CRITICAL' ? 'بحرانی' : 'هشدار'}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-2xs leading-5 text-ink-400">{alert.message}</p>
+                  <p className="mt-1 text-2xs leading-5 text-ink-600">{alert.message}</p>
                 </li>
               ))}
             </ul>
@@ -174,32 +174,32 @@ export default async function DashboardPage({
       <div className="mt-4 grid lg:grid-cols-2 gap-4">
         <section>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-ink-100">موجودی رو به اتمام</h2>
-            <Link href="/inventory" className="text-2xs text-saffron-400 hover:underline">همه</Link>
+            <h2 className="text-sm font-semibold text-ink-800">موجودی رو به اتمام</h2>
+            <Link href="/inventory" className="text-2xs text-forest-500 hover:underline">همه</Link>
           </div>
           {data.outOfStock.length + data.lowStock.length === 0 ? (
-            <div className="card p-6 text-center text-2xs text-ink-500">
+            <div className="card p-6 text-center text-2xs text-ink-600">
               همه مواد اولیه بالای حد سفارش هستند.
             </div>
           ) : (
             <Table>
               <thead>
-                <tr className="border-b border-ink-800">
+                <tr className="border-b border-ink-200">
                   <th className="th">ماده اولیه</th>
                   <th className="th">موجودی</th>
                   <th className="th">حد سفارش</th>
                   <th className="th">وضعیت</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-850">
+              <tbody className="divide-y divide-ink-100">
                 {[...data.outOfStock, ...data.lowStock].slice(0, 8).map((row) => (
                   <tr key={row.ingredientId}>
                     <td className="td">{row.namePersian}</td>
                     <td className="td tabular">
                       <Num>{Math.round(Number(row.quantity))}</Num>{' '}
-                      <span className="text-ink-500">{row.recipeUnit}</span>
+                      <span className="text-ink-600">{row.recipeUnit}</span>
                     </td>
-                    <td className="td tabular text-ink-400">
+                    <td className="td tabular text-ink-600">
                       <Num>{Math.round(Number(row.reorderLevel))}</Num>
                     </td>
                     <td className="td">
@@ -215,26 +215,26 @@ export default async function DashboardPage({
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-ink-100 mb-2">افزایش قیمت مواد اولیه</h2>
+          <h2 className="text-sm font-semibold text-ink-800 mb-2">افزایش قیمت مواد اولیه</h2>
           {data.priceIncreases.length === 0 ? (
-            <div className="card p-6 text-center text-2xs text-ink-500">
+            <div className="card p-6 text-center text-2xs text-ink-600">
               در این دوره افزایش قیمتی ثبت نشده است.
             </div>
           ) : (
             <Table>
               <thead>
-                <tr className="border-b border-ink-800">
+                <tr className="border-b border-ink-200">
                   <th className="th">ماده اولیه</th>
                   <th className="th">قیمت قبلی</th>
                   <th className="th">قیمت جدید</th>
                   <th className="th">تغییر</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-850">
+              <tbody className="divide-y divide-ink-100">
                 {data.priceIncreases.map((row, index) => (
                   <tr key={index}>
                     <td className="td">{row.ingredient}</td>
-                    <td className="td tabular text-ink-400">
+                    <td className="td tabular text-ink-600">
                       {row.previousPrice ? formatCurrency(row.previousPrice, { compact: true }) : '—'}
                     </td>
                     <td className="td tabular">{formatCurrency(row.price, { compact: true })}</td>
@@ -253,22 +253,22 @@ export default async function DashboardPage({
 
       <div className="mt-4 grid lg:grid-cols-2 gap-4">
         <section>
-          <h2 className="text-sm font-semibold text-ink-100 mb-2">آخرین خریدها</h2>
+          <h2 className="text-sm font-semibold text-ink-800 mb-2">آخرین خریدها</h2>
           <Table>
             <thead>
-              <tr className="border-b border-ink-800">
+              <tr className="border-b border-ink-200">
                 <th className="th">فاکتور</th>
                 <th className="th">تأمین‌کننده</th>
                 <th className="th">تاریخ</th>
                 <th className="th">مبلغ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-850">
+            <tbody className="divide-y divide-ink-100">
               {data.recentPurchases.map((p) => (
                 <tr key={p.id}>
-                  <td className="td text-ink-400" dir="ltr">{p.invoiceNumber ?? '—'}</td>
+                  <td className="td text-ink-600" dir="ltr">{p.invoiceNumber ?? '—'}</td>
                   <td className="td">{p.supplier}</td>
-                  <td className="td text-ink-400">{formatJalali(new Date(p.date), 'short')}</td>
+                  <td className="td text-ink-600">{formatJalali(new Date(p.date), 'short')}</td>
                   <td className="td"><Money value={p.amount} compact /></td>
                 </tr>
               ))}
@@ -277,22 +277,22 @@ export default async function DashboardPage({
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-ink-100 mb-2">آخرین هزینه‌ها</h2>
+          <h2 className="text-sm font-semibold text-ink-800 mb-2">آخرین هزینه‌ها</h2>
           <Table>
             <thead>
-              <tr className="border-b border-ink-800">
+              <tr className="border-b border-ink-200">
                 <th className="th">دسته</th>
                 <th className="th">شرح</th>
                 <th className="th">تاریخ</th>
                 <th className="th">مبلغ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-850">
+            <tbody className="divide-y divide-ink-100">
               {data.recentExpenses.map((e) => (
                 <tr key={e.id}>
                   <td className="td">{e.category}</td>
-                  <td className="td text-ink-400 max-w-[12rem] truncate">{e.description ?? '—'}</td>
-                  <td className="td text-ink-400">{formatJalali(new Date(e.date), 'short')}</td>
+                  <td className="td text-ink-600 max-w-[12rem] truncate">{e.description ?? '—'}</td>
+                  <td className="td text-ink-600">{formatJalali(new Date(e.date), 'short')}</td>
                   <td className="td"><Money value={e.amount} compact /></td>
                 </tr>
               ))}
@@ -316,29 +316,29 @@ function RankedList({
 }) {
   const toneClass = {
     positive: 'text-pistachio-400', negative: 'text-pomegranate-400',
-    warning: 'text-saffron-400', undefined: 'text-ink-100',
+    warning: 'text-forest-500', undefined: 'text-ink-800',
   };
   return (
     <section className="card p-4">
-      <h2 className="text-sm font-semibold text-ink-100">{title}</h2>
-      {hint && <p className="mt-0.5 text-2xs text-ink-500">{hint}</p>}
+      <h2 className="text-sm font-semibold text-ink-800">{title}</h2>
+      {hint && <p className="mt-0.5 text-2xs text-ink-600">{hint}</p>}
       {rows.length === 0 ? (
-        <p className="py-6 text-center text-2xs text-ink-500">داده‌ای برای این دوره نیست.</p>
+        <p className="py-6 text-center text-2xs text-ink-600">داده‌ای برای این دوره نیست.</p>
       ) : (
         <ol className="mt-3 space-y-2">
           {rows.map((row, index) => (
             <li key={row.id} className="flex items-center gap-3">
-              <span className="grid size-6 shrink-0 place-items-center rounded-md bg-ink-850 text-2xs text-ink-500 tabular">
+              <span className="grid size-6 shrink-0 place-items-center rounded-md bg-ink-100 text-2xs text-ink-600 tabular">
                 {(index + 1).toLocaleString('fa-IR')}
               </span>
-              <Link href={`/menu-items/${row.id}`} className="min-w-0 flex-1 truncate text-sm text-ink-200 hover:text-saffron-400 transition-colors">
+              <Link href={`/menu-items/${row.id}`} className="min-w-0 flex-1 truncate text-sm text-ink-700 hover:text-forest-500 transition-colors">
                 {row.name}
               </Link>
               <div className="text-left shrink-0">
                 <p className={`text-sm font-semibold tabular ${toneClass[row.tone ?? 'undefined']}`}>
                   {row.primary}
                 </p>
-                <p className="text-2xs text-ink-500 tabular">{row.secondary}</p>
+                <p className="text-2xs text-ink-600 tabular">{row.secondary}</p>
               </div>
             </li>
           ))}

@@ -78,10 +78,10 @@ export default async function SuppliersPage() {
             <article key={supplier.id} className="card p-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h2 className="font-semibold text-ink-50">
+                  <h2 className="font-semibold text-ink-900">
                     {supplier.namePersian ?? supplier.name}
                   </h2>
-                  <p className="text-2xs text-ink-500">{supplier.name}</p>
+                  <p className="text-2xs text-ink-600">{supplier.name}</p>
                 </div>
                 <Badge tone={supplier.isActive ? 'positive' : 'neutral'}>
                   {supplier.isActive ? 'فعال' : 'غیرفعال'}
@@ -107,13 +107,13 @@ export default async function SuppliersPage() {
 
       {contested.length > 0 && (
         <section className="mt-6">
-          <h2 className="mb-1 text-sm font-semibold text-ink-100">مقایسه قیمت تأمین‌کنندگان</h2>
-          <p className="mb-3 text-2xs text-ink-500">
+          <h2 className="mb-1 text-sm font-semibold text-ink-800">مقایسه قیمت تأمین‌کنندگان</h2>
+          <p className="mb-3 text-2xs text-ink-600">
             اقلامی که بیش از یک تأمین‌کننده برایشان قیمت داده‌اند. ارزان‌ترین قیمت با رنگ سبز.
           </p>
           <Table>
             <thead>
-              <tr className="border-b border-ink-800">
+              <tr className="border-b border-ink-200">
                 <th className="th">ماده اولیه</th>
                 {suppliers.map((s) => (
                   <th key={s.id} className="th">{s.namePersian ?? s.name}</th>
@@ -121,7 +121,7 @@ export default async function SuppliersPage() {
                 <th className="th">اختلاف</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-850">
+            <tbody className="divide-y divide-ink-100">
               {contested.map(([ingredientId, row]) => {
                 const prices = [...row.quotes.values()].map((q) => q.price);
                 const min = Math.min(...prices);
@@ -136,14 +136,14 @@ export default async function SuppliersPage() {
                           key={s.id}
                           className={`td tabular ${
                             quote?.price === min ? 'text-pistachio-400 font-medium'
-                              : quote?.price === max ? 'text-pomegranate-400' : 'text-ink-400'
+                              : quote?.price === max ? 'text-pomegranate-400' : 'text-ink-600'
                           }`}
                         >
                           {quote ? formatCurrency(quote.price, { compact: true }) : '—'}
                         </td>
                       );
                     })}
-                    <td className="td tabular text-saffron-400">
+                    <td className="td tabular text-forest-500">
                       {min > 0 ? formatPercent((max - min) / min, { decimals: 0 }) : '—'}
                     </td>
                   </tr>
@@ -160,8 +160,8 @@ export default async function SuppliersPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3">
-      <dt className="shrink-0 text-ink-500">{label}</dt>
-      <dd className="truncate text-ink-300">{value}</dd>
+      <dt className="shrink-0 text-ink-600">{label}</dt>
+      <dd className="truncate text-ink-600">{value}</dd>
     </div>
   );
 }

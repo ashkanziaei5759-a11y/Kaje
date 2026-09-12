@@ -105,21 +105,21 @@ export function InstallPrompt() {
         role="region"
         aria-label="افزودن منو به صفحه اصلی"
       >
-        <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-saffron-400/30 bg-ink-850/95 p-3 shadow-2xl backdrop-blur">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-saffron-400 text-lg font-extrabold text-ink-950">
+        <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-forest-500/30 bg-ink-100/95 p-3 shadow-2xl backdrop-blur">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-500 text-lg font-extrabold text-ink-50">
             ک
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-ink-50">منوی کاژه روی گوشی</p>
-            <p className="mt-0.5 text-2xs leading-5 text-ink-400">
+            <p className="text-sm font-semibold text-ink-900">منوی کاژه روی گوشی</p>
+            <p className="mt-0.5 text-2xs leading-5 text-ink-600">
               نصب کنید تا بدون اینترنت هم منو را داشته باشید.
             </p>
           </div>
 
           <button
             onClick={install}
-            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-saffron-400 px-4 text-2xs font-bold text-ink-950 transition-colors hover:bg-saffron-300 active:scale-95"
+            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-forest-500 px-4 text-2xs font-bold text-ink-50 transition-colors hover:bg-forest-400 active:scale-95"
           >
             <DownloadIcon className="size-4" />
             نصب
@@ -128,7 +128,7 @@ export function InstallPrompt() {
           <button
             onClick={dismiss}
             aria-label="بستن"
-            className="grid size-11 shrink-0 place-items-center rounded-xl text-ink-500 transition-colors hover:bg-ink-800 hover:text-ink-300"
+            className="grid size-11 shrink-0 place-items-center rounded-xl text-ink-600 transition-colors hover:bg-ink-200 hover:text-ink-600"
           >
             <CloseIcon className="size-4" />
           </button>
@@ -137,45 +137,45 @@ export function InstallPrompt() {
 
       {showIOSHelp && (
         <div
-          className="fixed inset-0 z-50 grid place-items-end bg-ink-950/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 grid place-items-end bg-ink-50/80 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="ios-install-title"
           onClick={dismiss}
         >
           <div
-            className="mx-auto w-full max-w-md rounded-2xl border border-ink-700 bg-ink-900 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+            className="mx-auto w-full max-w-md rounded-2xl border border-ink-300 bg-ink-0 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="ios-install-title" className="text-base font-bold text-ink-50">
+            <h2 id="ios-install-title" className="text-base font-bold text-ink-900">
               افزودن به صفحه اصلی
             </h2>
-            <p className="mt-1 text-2xs text-ink-400">
+            <p className="mt-1 text-2xs text-ink-600">
               در سافاری، دو مرحله ساده:
             </p>
 
             <ol className="mt-4 space-y-3">
               <li className="flex items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink-800 text-saffron-400">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink-200 text-forest-500">
                   <ShareIcon className="size-5" />
                 </span>
-                <p className="text-sm text-ink-200">
-                  <span className="tabular text-ink-500">۱.</span> دکمه اشتراک‌گذاری
+                <p className="text-sm text-ink-700">
+                  <span className="tabular text-ink-600">۱.</span> دکمه اشتراک‌گذاری
                   را در پایین صفحه بزنید
                 </p>
               </li>
               <li className="flex items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink-800 text-saffron-400">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink-200 text-forest-500">
                   <PlusSquareIcon className="size-5" />
                 </span>
-                <p className="text-sm text-ink-200">
-                  <span className="tabular text-ink-500">۲.</span> گزینه «Add to Home
+                <p className="text-sm text-ink-700">
+                  <span className="tabular text-ink-600">۲.</span> گزینه «Add to Home
                   Screen» را انتخاب کنید
                 </p>
               </li>
             </ol>
 
-            <button onClick={dismiss} className="mt-5 min-h-11 w-full rounded-xl bg-ink-800 text-sm font-medium text-ink-100 transition-colors hover:bg-ink-700">
+            <button onClick={dismiss} className="mt-5 min-h-11 w-full rounded-xl bg-ink-200 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-300">
               متوجه شدم
             </button>
           </div>

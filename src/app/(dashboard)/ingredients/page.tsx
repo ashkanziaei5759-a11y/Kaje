@@ -79,8 +79,8 @@ export default async function IngredientsPage() {
 
       <section className="mt-6">
         <div className="mb-3">
-          <h2 className="text-sm font-semibold text-ink-100">ویرایش قیمت و بازده</h2>
-          <p className="mt-0.5 text-2xs leading-5 text-ink-500">
+          <h2 className="text-sm font-semibold text-ink-800">ویرایش قیمت و بازده</h2>
+          <p className="mt-0.5 text-2xs leading-5 text-ink-600">
             چند ردیف را با هم تغییر دهید و یک‌جا ذخیره کنید. ستون «اثر» نشان می‌دهد هزینه هر
             واحد مصرف چند درصد جابه‌جا می‌شود.
           </p>
@@ -103,10 +103,10 @@ export default async function IngredientsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">همه مواد اولیه</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">همه مواد اولیه</h2>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">ماده اولیه</th>
               <th className="th">دسته</th>
               <th className="th">واحد خرید</th>
@@ -121,7 +121,7 @@ export default async function IngredientsPage() {
               <th className="th">آخرین خرید</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {ingredients.map((ingredient) => {
               const purchasePrice = Number(ingredient.averagePrice) || Number(ingredient.lastPurchasePrice);
               const factor = Number(ingredient.conversionFactor);
@@ -133,23 +133,23 @@ export default async function IngredientsPage() {
               const change = Number(ingredient.priceHistory[0]?.changePercent ?? 0);
 
               return (
-                <tr key={ingredient.id} className="hover:bg-ink-850/50 transition-colors">
+                <tr key={ingredient.id} className="hover:bg-ink-100/50 transition-colors">
                   <td className="td">
-                    <span className={ingredient.isActive ? '' : 'text-ink-600 line-through'}>
+                    <span className={ingredient.isActive ? '' : 'text-ink-400 line-through'}>
                       {ingredient.namePersian}
                     </span>
                     {ingredient.isPackaging && (
-                      <span className="mr-2 rounded bg-ink-800 px-1.5 py-0.5 text-2xs text-ink-400">
+                      <span className="mr-2 rounded bg-ink-200 px-1.5 py-0.5 text-2xs text-ink-600">
                         بسته‌بندی
                       </span>
                     )}
                   </td>
-                  <td className="td text-2xs text-ink-500">
+                  <td className="td text-2xs text-ink-600">
                     {CATEGORY_LABELS[ingredient.category] ?? ingredient.category}
                   </td>
-                  <td className="td text-ink-400">{unitLabel.get(ingredient.purchaseUnitId)}</td>
-                  <td className="td text-ink-400">{unitLabel.get(ingredient.recipeUnitId)}</td>
-                  <td className="td tabular text-ink-500">{formatNumber(factor)}</td>
+                  <td className="td text-ink-600">{unitLabel.get(ingredient.purchaseUnitId)}</td>
+                  <td className="td text-ink-600">{unitLabel.get(ingredient.recipeUnitId)}</td>
+                  <td className="td tabular text-ink-600">{formatNumber(factor)}</td>
                   <td className="td tabular">
                     {formatCurrency(purchasePrice, { compact: true })}
                     {change > 0 && (
@@ -158,26 +158,26 @@ export default async function IngredientsPage() {
                       </span>
                     )}
                   </td>
-                  <td className="td tabular text-ink-400">
+                  <td className="td tabular text-ink-600">
                     {formatCurrency(perRecipeUnit, { decimals: 2 })}
                   </td>
                   <td className="td tabular">
                     {yieldPercent < 1 ? (
-                      <span className="text-saffron-400">{formatPercent(yieldPercent, { decimals: 0 })}</span>
+                      <span className="text-forest-500">{formatPercent(yieldPercent, { decimals: 0 })}</span>
                     ) : (
-                      <span className="text-ink-600">۱۰۰٪</span>
+                      <span className="text-ink-400">۱۰۰٪</span>
                     )}
                   </td>
-                  <td className="td tabular text-ink-100">
+                  <td className="td tabular text-ink-800">
                     {formatCurrency(effective, { decimals: 2 })}
                   </td>
-                  <td className="td tabular text-ink-400">
+                  <td className="td tabular text-ink-600">
                     {formatNumber(Math.round(stock))}
                   </td>
-                  <td className="td text-2xs text-ink-500">
+                  <td className="td text-2xs text-ink-600">
                     {ingredient.defaultSupplier?.namePersian ?? '—'}
                   </td>
-                  <td className="td text-2xs text-ink-500">
+                  <td className="td text-2xs text-ink-600">
                     {ingredient.lastPurchaseDate ? formatJalali(ingredient.lastPurchaseDate, 'short') : '—'}
                   </td>
                 </tr>
@@ -186,7 +186,7 @@ export default async function IngredientsPage() {
           </tbody>
         </Table>
 
-        <p className="mt-2 text-2xs leading-6 text-ink-500">
+        <p className="mt-2 text-2xs leading-6 text-ink-600">
           «قیمت مؤثر» قیمت هر واحد <em>قابل‌استفاده</em> است: اگر ۱۰ کیلو گوشت بخرید و پس از
           پاک‌کردن ۸ کیلو بماند، همان ۸ کیلو باید هزینه کل ۱۰ کیلو را بپردازد. محاسبه بر پایه
           قیمت خرید خام، قیمت تمام‌شده هر غذا را کمتر از واقع نشان می‌دهد.

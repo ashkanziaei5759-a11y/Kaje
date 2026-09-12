@@ -80,10 +80,10 @@ export default async function InventoryPage() {
       </div>
 
       <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">موجودی فعلی</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">موجودی فعلی</h2>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">ماده اولیه</th>
               <th className="th">انبار</th>
               <th className="th">موجودی</th>
@@ -93,7 +93,7 @@ export default async function InventoryPage() {
               <th className="th">وضعیت</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {levels
               .sort((a, b) =>
                 Number(b.quantity) * Number(b.avgUnitCost) - Number(a.quantity) * Number(a.avgUnitCost))
@@ -101,22 +101,22 @@ export default async function InventoryPage() {
                 const status = alertByIngredient.get(level.ingredientId)?.status ?? 'OK';
                 const value = Number(level.quantity) * Number(level.avgUnitCost);
                 return (
-                  <tr key={level.id} className="hover:bg-ink-850/50 transition-colors">
+                  <tr key={level.id} className="hover:bg-ink-100/50 transition-colors">
                     <td className="td">{level.ingredient.namePersian}</td>
-                    <td className="td text-ink-500">{level.warehouse.namePersian}</td>
+                    <td className="td text-ink-600">{level.warehouse.namePersian}</td>
                     <td className="td tabular">
                       {formatNumber(Math.round(Number(level.quantity)))}
-                      <span className="mr-1 text-ink-600">
+                      <span className="mr-1 text-ink-400">
                         {unitLabel.get(level.ingredient.recipeUnitId)}
                       </span>
                     </td>
-                    <td className="td tabular text-ink-500">
+                    <td className="td tabular text-ink-600">
                       {formatNumber(Math.round(Number(level.ingredient.reorderLevel)))}
                     </td>
-                    <td className="td tabular text-ink-400">
+                    <td className="td tabular text-ink-600">
                       {formatCurrency(level.avgUnitCost.toString(), { decimals: 2 })}
                     </td>
-                    <td className="td tabular text-ink-100">
+                    <td className="td tabular text-ink-800">
                       {formatCurrency(value, { compact: true })}
                     </td>
                     <td className="td">
@@ -130,13 +130,13 @@ export default async function InventoryPage() {
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-1 text-sm font-semibold text-ink-100">دفتر حرکت کالا</h2>
-        <p className="mb-3 text-2xs text-ink-500">
+        <h2 className="mb-1 text-sm font-semibold text-ink-800">دفتر حرکت کالا</h2>
+        <p className="mb-3 text-2xs text-ink-600">
           هر تغییر موجودی یک سطر دارد: چه چیزی، چه مقدار، توسط چه کسی و به استناد کدام سند.
         </p>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">تاریخ</th>
               <th className="th">ماده اولیه</th>
               <th className="th">نوع</th>
@@ -148,32 +148,32 @@ export default async function InventoryPage() {
               <th className="th">سند</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {movements.map((movement) => {
               const quantity = Number(movement.quantity);
               return (
                 <tr key={movement.id}>
-                  <td className="td text-ink-500 text-2xs">
+                  <td className="td text-ink-600 text-2xs">
                     {formatJalaliDateTime(movement.occurredAt)}
                   </td>
                   <td className="td">{movement.ingredient.namePersian}</td>
-                  <td className="td text-2xs text-ink-400">
+                  <td className="td text-2xs text-ink-600">
                     {MOVEMENT_LABELS[movement.type] ?? movement.type}
                   </td>
                   <td className={`td tabular ${quantity >= 0 ? 'text-pistachio-400' : 'text-pomegranate-400'}`}>
                     {quantity >= 0 ? '+' : ''}{formatNumber(Math.round(quantity))}
                   </td>
-                  <td className="td tabular text-ink-500">
+                  <td className="td tabular text-ink-600">
                     {formatCurrency(movement.unitCost.toString(), { decimals: 2 })}
                   </td>
-                  <td className="td tabular text-ink-400">
+                  <td className="td tabular text-ink-600">
                     {formatCurrency(movement.totalCost.toString(), { compact: true })}
                   </td>
-                  <td className="td tabular text-ink-300">
+                  <td className="td tabular text-ink-600">
                     {formatNumber(Math.round(Number(movement.balanceAfter)))}
                   </td>
-                  <td className="td text-2xs text-ink-500">{movement.user?.name ?? '—'}</td>
-                  <td className="td text-2xs text-ink-500 max-w-[12rem] truncate">
+                  <td className="td text-2xs text-ink-600">{movement.user?.name ?? '—'}</td>
+                  <td className="td text-2xs text-ink-600 max-w-[12rem] truncate">
                     {movement.reason ?? '—'}
                   </td>
                 </tr>

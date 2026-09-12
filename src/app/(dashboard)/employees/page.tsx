@@ -80,7 +80,7 @@ export default async function EmployeesPage() {
       <section className="mt-6">
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">نام</th>
               <th className="th">سمت</th>
               <th className="th">بخش</th>
@@ -94,25 +94,25 @@ export default async function EmployeesPage() {
               <th className="th">وضعیت</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {employees.map((employee) => {
               const c = costs(employee);
               return (
                 <tr key={employee.id} className={employee.isActive ? '' : 'opacity-50'}>
                   <td className="td">{employee.name}</td>
-                  <td className="td text-ink-400">{employee.role}</td>
-                  <td className="td text-2xs text-ink-500">{employee.department ?? '—'}</td>
-                  <td className="td text-2xs text-ink-400">{SALARY_LABELS[employee.salaryType]}</td>
-                  <td className="td tabular text-ink-400">
+                  <td className="td text-ink-600">{employee.role}</td>
+                  <td className="td text-2xs text-ink-600">{employee.department ?? '—'}</td>
+                  <td className="td text-2xs text-ink-600">{SALARY_LABELS[employee.salaryType]}</td>
+                  <td className="td tabular text-ink-600">
                     {formatCurrency(employee.salaryAmount.toString(), { compact: true })}
                   </td>
-                  <td className="td tabular text-ink-500">
+                  <td className="td tabular text-ink-600">
                     {formatPercent(employee.burdenPercent.toString(), { decimals: 0 })}
                   </td>
-                  <td className="td tabular text-ink-100">{formatCurrency(c.monthly, { compact: true })}</td>
-                  <td className="td tabular text-ink-500">{faDigits(Number(employee.monthlyHours))}</td>
-                  <td className="td tabular text-ink-400">{formatCurrency(c.perHour, { compact: true })}</td>
-                  <td className="td tabular text-saffron-400">{formatCurrency(c.perMinute)}</td>
+                  <td className="td tabular text-ink-800">{formatCurrency(c.monthly, { compact: true })}</td>
+                  <td className="td tabular text-ink-600">{faDigits(Number(employee.monthlyHours))}</td>
+                  <td className="td tabular text-ink-600">{formatCurrency(c.perHour, { compact: true })}</td>
+                  <td className="td tabular text-forest-500">{formatCurrency(c.perMinute)}</td>
                   <td className="td">
                     <Badge tone={employee.isActive ? 'positive' : 'neutral'}>
                       {employee.isActive ? 'فعال' : 'غیرفعال'}
@@ -123,7 +123,7 @@ export default async function EmployeesPage() {
             })}
           </tbody>
         </Table>
-        <p className="mt-2 text-2xs leading-6 text-ink-500">
+        <p className="mt-2 text-2xs leading-6 text-ink-600">
           «هزینه ماهانه واقعی» شامل بیمه و مزایای کارفرماست. محاسبه هزینه نیروی کار بر پایه حقوق
           خام، هزینه واقعی هر دقیقه آشپزخانه را کمتر از واقع نشان می‌دهد و در نتیجه قیمت
           تمام‌شده غذاها پایین‌تر از حقیقت برآورد می‌شود.

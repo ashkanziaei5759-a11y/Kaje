@@ -69,13 +69,13 @@ export default async function CostBuilderPage({ params }: { params: Promise<{ id
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center gap-2 text-2xs">
-        <Link href="/menu-items" className="text-ink-500 hover:text-saffron-400">آیتم‌های منو</Link>
-        <span className="text-ink-700">/</span>
-        <Link href={`/menu-items/${id}`} className="text-ink-500 hover:text-saffron-400">
+        <Link href="/menu-items" className="text-ink-600 hover:text-forest-500">آیتم‌های منو</Link>
+        <span className="text-ink-300">/</span>
+        <Link href={`/menu-items/${id}`} className="text-ink-600 hover:text-forest-500">
           {item.namePersian}
         </Link>
-        <span className="text-ink-700">/</span>
-        <span className="text-ink-300">ساخت قیمت</span>
+        <span className="text-ink-300">/</span>
+        <span className="text-ink-600">ساخت قیمت</span>
       </div>
 
       <PageHeader
@@ -93,8 +93,8 @@ export default async function CostBuilderPage({ params }: { params: Promise<{ id
 
       {lines.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-sm text-ink-300">برای این آیتم دستور پختی ثبت نشده است.</p>
-          <p className="mt-1 text-2xs text-ink-500">
+          <p className="text-sm text-ink-600">برای این آیتم دستور پختی ثبت نشده است.</p>
+          <p className="mt-1 text-2xs text-ink-600">
             بدون دستور پخت، فقط نیروی کار و سربار محاسبه می‌شود.
           </p>
         </div>

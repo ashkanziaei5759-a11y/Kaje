@@ -85,7 +85,7 @@ export function ImageUploader({
     <div className="flex items-start gap-3">
       <div
         className="relative grid size-20 shrink-0 place-items-center overflow-hidden
-                   rounded-xl border border-ink-700 bg-ink-850"
+                   rounded-xl border border-ink-300 bg-ink-100"
       >
         {shown ? (
           // eslint-disable-next-line @next/next/no-img-element -- object URLs and
@@ -94,7 +94,7 @@ export function ImageUploader({
         ) : (
           <svg
             viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"
-            className="size-7 text-ink-600" aria-hidden="true"
+            className="size-7 text-ink-400" aria-hidden="true"
           >
             <rect x="3" y="5" width="18" height="14" rx="3" />
             <circle cx="8.5" cy="10" r="1.5" />
@@ -103,7 +103,7 @@ export function ImageUploader({
         )}
 
         {busy && (
-          <div className="absolute inset-0 grid place-items-center bg-ink-950/70 text-2xs text-saffron-400">
+          <div className="absolute inset-0 grid place-items-center bg-ink-50/70 text-2xs text-forest-500">
             …
           </div>
         )}
@@ -131,8 +131,8 @@ export function ImageUploader({
             className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4
                         text-2xs font-semibold transition-colors
                         ${canEdit && !busy
-                          ? 'bg-saffron-400 text-ink-950 hover:bg-saffron-300'
-                          : 'cursor-not-allowed bg-ink-800 text-ink-500'}`}
+                          ? 'bg-forest-500 text-ink-50 hover:bg-forest-400'
+                          : 'cursor-not-allowed bg-ink-200 text-ink-600'}`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
                  strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
@@ -145,7 +145,7 @@ export function ImageUploader({
           {shown && canEdit && !busy && (
             <button
               onClick={remove}
-              className="min-h-11 rounded-xl border border-ink-700 px-3 text-2xs text-ink-400
+              className="min-h-11 rounded-xl border border-ink-300 px-3 text-2xs text-ink-600
                          transition-colors hover:border-pomegranate-500 hover:text-pomegranate-400"
             >
               حذف
@@ -156,7 +156,7 @@ export function ImageUploader({
         {error ? (
           <p role="alert" className="mt-1.5 text-2xs text-pomegranate-400">{error}</p>
         ) : (
-          <p className="mt-1.5 text-2xs leading-5 text-ink-500">
+          <p className="mt-1.5 text-2xs leading-5 text-ink-600">
             از گالری گوشی یا دوربین. عکس خودکار فشرده و بهینه می‌شود — حداکثر ۱۲ مگابایت.
           </p>
         )}

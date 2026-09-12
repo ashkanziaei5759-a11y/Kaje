@@ -232,8 +232,8 @@ export function CostBuilder({
         {/* Ingredients */}
         <section className="card p-4">
           <header className="mb-3">
-            <h2 className="text-sm font-semibold text-ink-100">مواد اولیه و مقادیر</h2>
-            <p className="mt-0.5 text-2xs text-ink-500">
+            <h2 className="text-sm font-semibold text-ink-800">مواد اولیه و مقادیر</h2>
+            <p className="mt-0.5 text-2xs text-ink-600">
               قیمت خرید هر ماده و مقدار مصرفی در این غذا. با هر تغییر، قیمت تمام‌شده دوباره حساب می‌شود.
             </p>
           </header>
@@ -241,7 +241,7 @@ export function CostBuilder({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px]">
               <thead>
-                <tr className="border-b border-ink-800">
+                <tr className="border-b border-ink-200">
                   <th className="th">جزء</th>
                   <th className="th">مقدار</th>
                   <th className="th">قیمت خرید</th>
@@ -250,7 +250,7 @@ export function CostBuilder({
                   <th className="th"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-850">
+              <tbody className="divide-y divide-ink-100">
                 {lines.map((line) => {
                   const isRemoved = removed.includes(line.id);
                   const costed = result.lines.find((l) => l.refId === line.refId);
@@ -260,12 +260,12 @@ export function CostBuilder({
                       <td className="td">
                         {line.name}
                         {line.kind === 'SUB_RECIPE' && (
-                          <span className="mr-2 rounded bg-ink-800 px-1.5 py-0.5 text-2xs text-ink-400">
+                          <span className="mr-2 rounded bg-ink-200 px-1.5 py-0.5 text-2xs text-ink-600">
                             دستور میانی
                           </span>
                         )}
                         {line.isPackaging && (
-                          <span className="mr-2 rounded bg-ink-800 px-1.5 py-0.5 text-2xs text-ink-400">
+                          <span className="mr-2 rounded bg-ink-200 px-1.5 py-0.5 text-2xs text-ink-600">
                             بسته‌بندی
                           </span>
                         )}
@@ -280,11 +280,11 @@ export function CostBuilder({
                             value={quantities[line.id] ?? line.quantity}
                             onChange={(e) =>
                               setQuantities((q) => ({ ...q, [line.id]: e.target.value }))}
-                            className="tabular h-10 w-20 rounded-lg border border-ink-700 bg-ink-850
-                                       px-2 text-left text-2xs text-ink-50 focus:border-saffron-400
-                                       focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50"
+                            className="tabular h-10 w-20 rounded-lg border border-ink-300 bg-ink-100
+                                       px-2 text-left text-2xs text-ink-900 focus:border-forest-500
+                                       focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50"
                           />
-                          <span className="text-2xs text-ink-500">{line.unitCode}</span>
+                          <span className="text-2xs text-ink-600">{line.unitCode}</span>
                         </div>
                       </td>
 
@@ -298,14 +298,14 @@ export function CostBuilder({
                               value={prices[line.refId] ?? String(Math.round(Number(line.purchasePrice)))}
                               onChange={(e) =>
                                 setPrices((p) => ({ ...p, [line.refId]: e.target.value }))}
-                              className="tabular h-10 w-28 rounded-lg border border-ink-700 bg-ink-850
-                                         px-2 text-left text-2xs text-ink-50 focus:border-saffron-400
-                                         focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50"
+                              className="tabular h-10 w-28 rounded-lg border border-ink-300 bg-ink-100
+                                         px-2 text-left text-2xs text-ink-900 focus:border-forest-500
+                                         focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50"
                             />
-                            <span className="text-2xs text-ink-600">/{line.purchaseUnitCode}</span>
+                            <span className="text-2xs text-ink-400">/{line.purchaseUnitCode}</span>
                           </div>
                         ) : (
-                          <span className="text-2xs text-ink-600">—</span>
+                          <span className="text-2xs text-ink-400">—</span>
                         )}
                       </td>
 
@@ -321,18 +321,18 @@ export function CostBuilder({
                                 setYields((y) => ({
                                   ...y, [line.refId]: String(Number(e.target.value) / 100),
                                 }))}
-                              className="tabular h-10 w-14 rounded-lg border border-ink-700 bg-ink-850
-                                         px-2 text-left text-2xs text-ink-50 focus:border-saffron-400
-                                         focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50"
+                              className="tabular h-10 w-14 rounded-lg border border-ink-300 bg-ink-100
+                                         px-2 text-left text-2xs text-ink-900 focus:border-forest-500
+                                         focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50"
                             />
-                            <span className="text-2xs text-ink-600">٪</span>
+                            <span className="text-2xs text-ink-400">٪</span>
                           </div>
                         ) : (
-                          <span className="text-2xs text-ink-600">—</span>
+                          <span className="text-2xs text-ink-400">—</span>
                         )}
                       </td>
 
-                      <td className="td tabular text-ink-100">
+                      <td className="td tabular text-ink-800">
                         {costed && !isRemoved ? formatCurrency(costed.totalCost) : '—'}
                       </td>
 
@@ -348,8 +348,8 @@ export function CostBuilder({
                                 : `حذف موقت ${line.name} از محاسبه`
                             }
                             title={isRemoved ? 'برگرداندن' : 'حذف موقت از محاسبه'}
-                            className="grid size-9 place-items-center rounded-lg text-ink-500
-                                       transition-colors hover:bg-ink-800 hover:text-ink-200"
+                            className="grid size-9 place-items-center rounded-lg text-ink-600
+                                       transition-colors hover:bg-ink-200 hover:text-ink-700"
                           >
                             {isRemoved ? '↺' : '×'}
                           </button>
@@ -363,7 +363,7 @@ export function CostBuilder({
           </div>
 
           {removed.length > 0 && (
-            <p className="mt-3 rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-2xs leading-5 text-ink-400">
+            <p className="mt-3 rounded-lg border border-ink-300 bg-ink-100 px-3 py-2 text-2xs leading-5 text-ink-600">
               «حذف موقت» فقط برای دیدن اثر روی قیمت است و ذخیره نمی‌شود. برای حذف دائمی،
               دستور پخت را در صفحه دستور پخت ویرایش کنید.
             </p>
@@ -372,7 +372,7 @@ export function CostBuilder({
 
         {/* Labour & price */}
         <section className="card p-4">
-          <h2 className="mb-3 text-sm font-semibold text-ink-100">نیروی کار و قیمت فروش</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink-800">نیروی کار و قیمت فروش</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <NumberField
               label="زمان کل آماده‌سازی و پخت"
@@ -393,7 +393,7 @@ export function CostBuilder({
                   <button
                     type="button"
                     onClick={() => setPrice(String(Math.round(Number(result.recommendedPrice))))}
-                    className="text-saffron-400 underline hover:text-saffron-300"
+                    className="text-forest-500 underline hover:text-forest-400"
                   >
                     اعمال کن
                   </button>
@@ -406,11 +406,11 @@ export function CostBuilder({
         {/* Profile */}
         <section className="card p-4">
           <header className="mb-3">
-            <h2 className="text-sm font-semibold text-ink-100">
+            <h2 className="text-sm font-semibold text-ink-800">
               قواعد محاسبه — پروفایل «{profile.name}»
             </h2>
-            <p className="mt-0.5 text-2xs leading-5 text-ink-500">
-              این تنظیمات روی <strong className="text-saffron-400">همه</strong> آیتم‌هایی که از
+            <p className="mt-0.5 text-2xs leading-5 text-ink-600">
+              این تنظیمات روی <strong className="text-forest-500">همه</strong> آیتم‌هایی که از
               این پروفایل استفاده می‌کنند اثر می‌گذارد، نه فقط این غذا.
             </p>
           </header>
@@ -546,7 +546,7 @@ export function CostBuilder({
           </fieldset>
 
           {!canEditProfile && (
-            <p className="mt-3 text-2xs text-ink-500">
+            <p className="mt-3 text-2xs text-ink-600">
               برای تغییر این تنظیمات به دسترسی «پیکربندی قیمت‌گذاری» نیاز دارید.
             </p>
           )}
@@ -556,14 +556,14 @@ export function CostBuilder({
       {/* ── Live result ────────────────────────────────────────────────── */}
       <aside className="xl:sticky xl:top-20 xl:self-start">
         <div className="card overflow-hidden">
-          <div className="border-b border-ink-800 p-4">
+          <div className="border-b border-ink-200 p-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-ink-100">نتیجه محاسبه</h2>
+              <h2 className="text-sm font-semibold text-ink-800">نتیجه محاسبه</h2>
               <span
                 aria-live="polite"
                 className={`text-2xs ${
-                  status === 'calculating' ? 'text-saffron-400'
-                    : status === 'error' ? 'text-pomegranate-400' : 'text-ink-600'
+                  status === 'calculating' ? 'text-forest-500'
+                    : status === 'error' ? 'text-pomegranate-400' : 'text-ink-400'
                 }`}
               >
                 {status === 'calculating' ? 'در حال محاسبه…'
@@ -582,7 +582,7 @@ export function CostBuilder({
             <p className="label">قیمت تمام‌شده هر پرس</p>
             <p className="mt-1 text-2xl font-bold">
               <Delta from={baseline.totalCost} to={result.totalCost} format={money} invert />
-              <span className="mr-1.5 text-sm font-normal text-ink-500">{symbol}</span>
+              <span className="mr-1.5 text-sm font-normal text-ink-600">{symbol}</span>
             </p>
 
             <div className="mt-4">
@@ -598,7 +598,7 @@ export function CostBuilder({
               />
             </div>
 
-            <dl className="mt-4 space-y-2 border-t border-ink-800 pt-3">
+            <dl className="mt-4 space-y-2 border-t border-ink-200 pt-3">
               <Row label="مواد اولیه" from={baseline.ingredientCost} to={result.ingredientCost} format={money} invert />
               <Row label="دستورهای میانی" from={baseline.subRecipeCost} to={result.subRecipeCost} format={money} invert />
               <Row label="بسته‌بندی" from={baseline.packagingCost} to={result.packagingCost} format={money} invert />
@@ -606,7 +606,7 @@ export function CostBuilder({
               <Row label="سربار" from={baseline.overheadCost} to={result.overheadCost} format={money} invert />
             </dl>
 
-            <dl className="mt-3 space-y-2 border-t border-ink-800 pt-3">
+            <dl className="mt-3 space-y-2 border-t border-ink-200 pt-3">
               <Row label="قیمت فروش" from={baseline.sellingPrice} to={result.sellingPrice} format={money} />
               <Row label="سود ناخالص" from={baseline.grossProfit} to={result.grossProfit} format={money} />
               <Row label="حاشیه سود" from={baseline.grossMarginPct} to={result.grossMarginPct} format={pct} />
@@ -619,14 +619,14 @@ export function CostBuilder({
                 با این تنظیمات، هر پرس {formatCurrency(Math.abs(Number(result.grossProfit)), { symbol })} زیان می‌دهد.
               </p>
             ) : result.isBelowMinimumMargin ? (
-              <p className="mt-3 rounded-lg border border-saffron-400/30 bg-saffron-400/10 px-3 py-2 text-2xs leading-5 text-saffron-300">
+              <p className="mt-3 rounded-lg border border-forest-500/30 bg-forest-500/10 px-3 py-2 text-2xs leading-5 text-forest-400">
                 حاشیه سود از حداقل تعیین‌شده کمتر است. قیمت پیشنهادی:{' '}
                 {formatCurrency(result.recommendedPrice, { symbol })}.
               </p>
             ) : null}
           </div>
 
-          <div className="border-t border-ink-800 p-4">
+          <div className="border-t border-ink-200 p-4">
             <button
               onClick={saveAll}
               disabled={!isDirty || saving || status === 'error'}
@@ -642,7 +642,7 @@ export function CostBuilder({
             {saved && (
               <p role="status" className="mt-2 text-center text-2xs text-pistachio-400">{saved}</p>
             )}
-            <p className="mt-3 text-2xs leading-5 text-ink-600">
+            <p className="mt-3 text-2xs leading-5 text-ink-400">
               مقدارهای دستور پخت اینجا فقط برای پیش‌نمایش‌اند؛ قیمت مواد اولیه،
               تنظیمات پروفایل و قیمت فروش ذخیره می‌شوند.
             </p>
@@ -664,7 +664,7 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-2xs text-ink-400">{label}</dt>
+      <dt className="text-2xs text-ink-600">{label}</dt>
       <dd className="text-sm"><Delta from={from} to={to} format={format} invert={invert} /></dd>
     </div>
   );

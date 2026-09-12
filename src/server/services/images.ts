@@ -2,30 +2,25 @@
  * Menu photo storage.
  *
  * Photos are taken on the owner's phone and uploaded from the gallery, so they
- * arrive as 3–12 MB originals from a modern camera. Serving those untouched to
- * a diner on mobile data would make the menu unusable, so every upload is
- * re-encoded here: resized to a sane maximum, converted to WebP, and stripped
- * of EXIF — which matters beyond file size, because phone photos carry GPS
- * coordinates and publishing those on a public menu would leak where the
- * picture was taken.
+ * arrive as multi-megabyte originals. Every upload is re-encoded before it is
+ * kept: resized, converted to WebP, and stripped of EXIF — which matters
+ * beyond file size, because phone photos carry GPS coordinates and publishing
+ * those on a public menu would leak where the picture was taken.
  *
- * Two renditions are written: a display image and a thumbnail for the admin
- * list. Both are content-hashed, so replacing a photo never serves a stale
- * cached copy.
+ * Bytes go into Postgres rather than onto disk. The deployment target is
+ * serverless, where the filesystem is read-only and per-instance, so anything
+ * written to it either fails outright or disappears. A resized photo is ~100 KB
+ * and a restaurant has tens of them; that is far cheaper than standing up an
+ * object store. Past a few thousand photos this should move to S3 or Vercel
+ * Blob — only this file would change.
  */
 import 'server-only';
 import sharp, { type Sharp, type Metadata } from 'sharp';
 import { createHash } from 'node:crypto';
-import { writeFile, mkdir, unlink } from 'node:fs/promises';
-import path from 'node:path';
+import { prisma } from '@/lib/db';
 
-/** Where renditions land. Public so Next serves them as static files. */
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
-const PUBLIC_PREFIX = '/uploads';
-
-export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024; // 12 MB
+export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 const DISPLAY_MAX_EDGE = 1400;
-const THUMB_EDGE = 320;
 
 /** Formats a phone camera actually produces, plus the web standards. */
 const ALLOWED_TYPES = new Set([
@@ -39,9 +34,9 @@ export class ImageError extends Error {
   }
 }
 
-export interface StoredImage {
+export interface StoredImageResult {
+  id: string;
   url: string;
-  thumbnailUrl: string;
   width: number;
   height: number;
   bytes: number;
@@ -49,8 +44,8 @@ export interface StoredImage {
 
 export async function storeMenuImage(
   file: File,
-  scope: string,
-): Promise<StoredImage> {
+  restaurantId: string,
+): Promise<StoredImageResult> {
   if (!ALLOWED_TYPES.has(file.type)) {
     throw new ImageError(
       'فقط عکس با فرمت JPG، PNG، WebP یا HEIC پذیرفته می‌شود',
@@ -67,12 +62,10 @@ export async function storeMenuImage(
   const input = Buffer.from(await file.arrayBuffer());
 
   // Decode before trusting anything: a file can claim image/jpeg in its MIME
-  // type and be something else entirely. If sharp cannot read it as an image,
-  // it does not get written to a public directory.
-  let source: Sharp;
+  // type and be something else entirely.
   let metadata: Metadata;
   try {
-    source = sharp(input, { failOn: 'error' });
+    const source: Sharp = sharp(input, { failOn: 'error' });
     metadata = await source.metadata();
   } catch {
     throw new ImageError('این فایل یک عکس معتبر نیست', 'NOT_AN_IMAGE');
@@ -81,11 +74,7 @@ export async function storeMenuImage(
     throw new ImageError('ابعاد عکس خوانده نشد', 'NO_DIMENSIONS');
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  const hash = createHash('sha256').update(input).digest('hex').slice(0, 16);
-  const base = `${sanitise(scope)}-${hash}`;
-
-  const display = await sharp(input)
+  const rendition = await sharp(input)
     // Phones record orientation in EXIF rather than rotating the pixels;
     // without this, portrait photos appear sideways.
     .rotate()
@@ -98,45 +87,46 @@ export async function storeMenuImage(
     .webp({ quality: 82 })
     .toBuffer({ resolveWithObject: true });
 
-  const thumbnail = await sharp(input)
-    .rotate()
-    .resize({ width: THUMB_EDGE, height: THUMB_EDGE, fit: 'cover', position: 'attention' })
-    .webp({ quality: 74 })
-    .toBuffer();
+  const hash = createHash('sha256').update(rendition.data).digest('hex').slice(0, 32);
 
-  await Promise.all([
-    writeFile(path.join(UPLOAD_DIR, `${base}.webp`), display.data),
-    writeFile(path.join(UPLOAD_DIR, `${base}-thumb.webp`), thumbnail),
-  ]);
+  // Re-uploading the same photo reuses the row rather than duplicating bytes.
+  const stored = await prisma.storedImage.upsert({
+    where: { restaurantId_hash: { restaurantId, hash } },
+    update: {},
+    create: {
+      restaurantId,
+      hash,
+      data: rendition.data,
+      contentType: 'image/webp',
+      width: rendition.info.width,
+      height: rendition.info.height,
+      bytes: rendition.data.length,
+    },
+  });
 
   return {
-    url: `${PUBLIC_PREFIX}/${base}.webp`,
-    thumbnailUrl: `${PUBLIC_PREFIX}/${base}-thumb.webp`,
-    width: display.info.width,
-    height: display.info.height,
-    bytes: display.data.length,
+    id: stored.id,
+    url: `/api/images/${stored.id}`,
+    width: stored.width,
+    height: stored.height,
+    bytes: stored.bytes,
   };
 }
 
 /**
- * Deletes a stored rendition pair.
+ * Deletes a stored photo, given the URL held on the menu item.
  *
- * Refuses any path that is not a plain filename inside the upload directory,
- * so a crafted imageUrl on a menu item cannot be used to delete files
- * elsewhere on disk.
+ * Only ids produced by this module are acted on; anything else is ignored, so
+ * a crafted imageUrl cannot be used to delete arbitrary rows.
  */
 export async function deleteMenuImage(url: string | null): Promise<void> {
-  if (!url || !url.startsWith(`${PUBLIC_PREFIX}/`)) return;
-
-  const filename = path.basename(url);
-  if (filename !== url.slice(PUBLIC_PREFIX.length + 1)) return;
-
-  const target = path.join(UPLOAD_DIR, filename);
-  if (path.dirname(target) !== UPLOAD_DIR) return;
-
-  const thumbnail = target.replace(/\.webp$/, '-thumb.webp');
-  await Promise.allSettled([unlink(target), unlink(thumbnail)]);
+  const id = imageIdFromUrl(url);
+  if (!id) return;
+  await prisma.storedImage.deleteMany({ where: { id } });
 }
 
-const sanitise = (value: string) =>
-  value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'item';
+export function imageIdFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  const match = /^\/api\/images\/([A-Za-z0-9_-]{1,64})$/.exec(url);
+  return match ? match[1] : null;
+}

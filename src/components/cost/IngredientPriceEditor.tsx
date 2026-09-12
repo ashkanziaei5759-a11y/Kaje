@@ -115,7 +115,7 @@ export function IngredientPriceEditor({
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[720px]">
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">ماده اولیه</th>
               <th className="th">قیمت خرید</th>
               <th className="th">بازده</th>
@@ -123,7 +123,7 @@ export function IngredientPriceEditor({
               <th className="th">اثر</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {ingredients.map((ingredient) => {
               const draft = drafts[ingredient.id] ?? {};
               const originalCost =
@@ -151,11 +151,11 @@ export function IngredientPriceEditor({
                         aria-invalid={error ? true : undefined}
                         value={draft.price ?? round(ingredient.price)}
                         onChange={(e) => set(ingredient.id, { price: e.target.value })}
-                        className="tabular h-10 w-32 rounded-lg border border-ink-700 bg-ink-850
-                                   px-2 text-left text-2xs text-ink-50 focus:border-saffron-400
-                                   focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50"
+                        className="tabular h-10 w-32 rounded-lg border border-ink-300 bg-ink-100
+                                   px-2 text-left text-2xs text-ink-900 focus:border-forest-500
+                                   focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50"
                       />
-                      <span className="text-2xs text-ink-600">/{ingredient.purchaseUnit}</span>
+                      <span className="text-2xs text-ink-400">/{ingredient.purchaseUnit}</span>
                     </div>
                   </td>
 
@@ -167,22 +167,22 @@ export function IngredientPriceEditor({
                         aria-label={`بازده ${ingredient.name}`}
                         value={draft.yieldPercent ?? pctOf(ingredient.yieldPercent)}
                         onChange={(e) => set(ingredient.id, { yieldPercent: e.target.value })}
-                        className="tabular h-10 w-16 rounded-lg border border-ink-700 bg-ink-850
-                                   px-2 text-left text-2xs text-ink-50 focus:border-saffron-400
-                                   focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50"
+                        className="tabular h-10 w-16 rounded-lg border border-ink-300 bg-ink-100
+                                   px-2 text-left text-2xs text-ink-900 focus:border-forest-500
+                                   focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50"
                       />
-                      <span className="text-2xs text-ink-600">٪</span>
+                      <span className="text-2xs text-ink-400">٪</span>
                     </div>
                   </td>
 
-                  <td className="td tabular text-ink-100">
+                  <td className="td tabular text-ink-800">
                     {formatCurrency(nextCost, { decimals: 2 })}
-                    <span className="mr-1 text-2xs text-ink-600">/{ingredient.recipeUnit}</span>
+                    <span className="mr-1 text-2xs text-ink-400">/{ingredient.recipeUnit}</span>
                   </td>
 
                   <td className="td">
                     {Math.abs(delta) < 0.001 ? (
-                      <span className="text-2xs text-ink-700">—</span>
+                      <span className="text-2xs text-ink-300">—</span>
                     ) : (
                       <span
                         className={`tabular text-2xs ${
@@ -228,7 +228,7 @@ export function IngredientPriceEditor({
         </div>
       )}
 
-      <p className="mt-3 text-2xs leading-6 text-ink-500">
+      <p className="mt-3 text-2xs leading-6 text-ink-600">
         تغییر قیمت اینجا در تاریخچه قیمت ثبت می‌شود و میانگین موزون را هم به‌روز می‌کند —
         وگرنه صفحه یک عدد نشان می‌داد و موتور با عدد قدیمی محاسبه می‌کرد.
       </p>

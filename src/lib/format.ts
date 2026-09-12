@@ -69,8 +69,8 @@ export function formatNumber(value: string | number, persianDigits = true): stri
 /** Colour class for a margin figure: healthy, thin, or losing money. */
 export function marginTone(fraction: string | number, target = 0.25): string {
   const n = Number(fraction);
-  if (!Number.isFinite(n)) return 'text-ink-400';
+  if (!Number.isFinite(n)) return 'text-ink-500';
   if (n <= 0) return 'text-pomegranate-400';
-  if (n < target) return 'text-saffron-400';
+  if (n < target) return 'text-forest-500';
   return 'text-pistachio-400';
 }

@@ -53,7 +53,7 @@ export function PriceEditor({
   return (
     <div>
       <label htmlFor="price" className="label mb-1.5 block">
-        قیمت فروش {isOverridden && <span className="text-saffron-400">(دستی)</span>}
+        قیمت فروش {isOverridden && <span className="text-forest-500">(دستی)</span>}
       </label>
       <div className="flex gap-2">
         <input
@@ -75,7 +75,7 @@ export function PriceEditor({
         <button
           onClick={() => { setPrice(recommendedRounded); save(recommendedRounded, false); }}
           disabled={status === 'saving'}
-          className="mt-2 w-full rounded-lg border border-saffron-400/30 bg-saffron-400/10 px-3 py-2 text-2xs text-saffron-300 hover:bg-saffron-400/20 transition-colors"
+          className="mt-2 w-full rounded-lg border border-forest-500/30 bg-forest-500/10 px-3 py-2 text-2xs text-forest-400 hover:bg-forest-500/20 transition-colors"
         >
           پذیرفتن قیمت پیشنهادی: {formatCurrency(recommendedPrice, { symbol })}
         </button>

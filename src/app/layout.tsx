@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B0E13',
+  themeColor: '#F2F7F4',
   width: 'device-width',
   initialScale: 1,
   // Pinch-zoom stays enabled: disabling it fails WCAG 1.4.4 and hurts anyone

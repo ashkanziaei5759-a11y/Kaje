@@ -46,19 +46,19 @@ export function CostBar({
   const scale = Math.max(price, totalCost) || 1;
 
   const segments: CostBarSegment[] = [
-    { key: 'food', label: 'مواد اولیه', value: food, className: 'bg-ink-400' },
-    { key: 'labor', label: 'نیروی کار', value: labor, className: 'bg-ink-600' },
-    { key: 'packaging', label: 'بسته‌بندی', value: packaging, className: 'bg-ink-700' },
+    { key: 'food', label: 'مواد اولیه', value: food, className: 'bg-ink-500' },
+    { key: 'labor', label: 'نیروی کار', value: labor, className: 'bg-ink-400' },
+    { key: 'packaging', label: 'بسته‌بندی', value: packaging, className: 'bg-ink-300' },
     { key: 'overhead', label: 'سربار', value: overhead, className: 'bg-ink-500' },
     isLoss
       ? { key: 'loss', label: 'زیان', value: -profit, className: 'bg-pomegranate-500' }
-      : { key: 'profit', label: 'سود', value: profit, className: 'bg-saffron-400' },
+      : { key: 'profit', label: 'سود', value: profit, className: 'bg-forest-500' },
   ];
 
   return (
     <div className="w-full">
       <div
-        className={`flex w-full overflow-hidden rounded-full bg-ink-850 ${height}`}
+        className={`flex w-full overflow-hidden rounded-full bg-ink-100 ${height}`}
         role="img"
         aria-label={
           `قیمت فروش ${formatCurrency(price)}، ` +
@@ -83,10 +83,10 @@ export function CostBar({
           {segments
             .filter((s) => s.value > 0)
             .map((s) => (
-              <span key={s.key} className="inline-flex items-center gap-1.5 text-2xs text-ink-400">
+              <span key={s.key} className="inline-flex items-center gap-1.5 text-2xs text-ink-600">
                 <span className={`inline-block size-2 rounded-sm ${s.className}`} />
                 {s.label}
-                <span className="tabular text-ink-300">
+                <span className="tabular text-ink-600">
                   {formatPercent(s.value / scale, { decimals: 0 })}
                 </span>
               </span>

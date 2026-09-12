@@ -30,7 +30,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       );
     }
 
-    const stored = await storeMenuImage(file, item.name);
+    const stored = await storeMenuImage(file, user.restaurantId);
     const previous = item.imageUrl;
 
     await prisma.menuItem.update({ where: { id }, data: { imageUrl: stored.url } });

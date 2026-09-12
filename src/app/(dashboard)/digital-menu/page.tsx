@@ -53,20 +53,20 @@ export default async function DigitalMenuPage() {
         />
 
         <section className="min-w-0">
-          <h2 className="mb-3 text-sm font-semibold text-ink-100">وضعیت نمایش آیتم‌ها</h2>
-          <p className="mb-3 text-2xs leading-6 text-ink-500">
+          <h2 className="mb-3 text-sm font-semibold text-ink-800">وضعیت نمایش آیتم‌ها</h2>
+          <p className="mb-3 text-2xs leading-6 text-ink-600">
             «موجود» روی منو نمایش داده و قابل سفارش است. «ناموجود» نمایش داده می‌شود اما
             تمام‌شده علامت می‌خورد. «مخفی» اصلاً روی منو نمی‌آید.
             تغییر دستیِ وضعیت بر تشخیص خودکار از روی موجودی انبار اولویت دارد.
           </p>
 
-          <div className="card divide-y divide-ink-850">
+          <div className="card divide-y divide-ink-100">
             {items.map((item) => (
               <div key={item.id} className="space-y-3 p-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-ink-100">{item.namePersian}</p>
-                    <p className="text-2xs text-ink-500">
+                    <p className="truncate text-sm text-ink-800">{item.namePersian}</p>
+                    <p className="text-2xs text-ink-600">
                       {item.category.namePersian}
                       {' — '}
                       <span className="tabular">

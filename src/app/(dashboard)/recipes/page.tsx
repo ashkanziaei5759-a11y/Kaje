@@ -78,33 +78,33 @@ export default async function RecipesPage() {
         { title: 'دستور غذاهای منو', rows: menuRecipes, hint: null },
       ].map((group) => (
         <section key={group.title} className="mt-6">
-          <h2 className="mb-1 text-sm font-semibold text-ink-100">{group.title}</h2>
-          {group.hint && <p className="mb-3 text-2xs text-ink-500">{group.hint}</p>}
+          <h2 className="mb-1 text-sm font-semibold text-ink-800">{group.title}</h2>
+          {group.hint && <p className="mb-3 text-2xs text-ink-600">{group.hint}</p>}
           <div className="space-y-3">
             {group.rows.map(({ recipe, result, error }) => (
               <article key={recipe.id} className="card p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-ink-50">{recipe.namePersian}</h3>
+                      <h3 className="font-semibold text-ink-900">{recipe.namePersian}</h3>
                       <Badge tone={recipe.type === 'MENU_ITEM' ? 'accent' : 'neutral'}>
                         {TYPE_LABELS[recipe.type]}
                       </Badge>
                       <Badge tone="neutral">نسخه {faDigits(recipe.currentVersion)}</Badge>
                     </div>
-                    <p className="mt-1 text-2xs text-ink-500">
+                    <p className="mt-1 text-2xs text-ink-600">
                       بازده: {faDigits(Number(recipe.yieldQuantity))}{' '}
                       {unitLabel.get(recipe.yieldUnitId ?? '') ?? ''}
                       {' — '}
                       زمان: {faDigits(recipe.prepTimeMinutes + recipe.cookTimeMinutes)} دقیقه
                       {Number(recipe.recipeYieldPercent) < 1 && (
-                        <span className="mr-2 text-saffron-400">
+                        <span className="mr-2 text-forest-500">
                           افت پخت: {formatPercent(1 - Number(recipe.recipeYieldPercent), { decimals: 0 })}
                         </span>
                       )}
                     </p>
                     {recipe.usedIn.length > 0 && (
-                      <p className="mt-1 text-2xs text-ink-600">
+                      <p className="mt-1 text-2xs text-ink-400">
                         مصرف در: {recipe.usedIn.map((u) => u.recipe.namePersian).join('، ')}
                       </p>
                     )}
@@ -116,11 +116,11 @@ export default async function RecipesPage() {
                     ) : (
                       <>
                         <p className="label">قیمت تمام‌شده هر واحد</p>
-                        <p className="mt-0.5 text-lg font-bold tabular text-saffron-400">
+                        <p className="mt-0.5 text-lg font-bold tabular text-forest-500">
                           {formatCurrency(result!.totalCost, { symbol })}
                         </p>
                         {Number(result!.wasteAdjustment) > 0 && (
-                          <p className="text-2xs text-ink-500">
+                          <p className="text-2xs text-ink-600">
                             شامل {formatCurrency(result!.wasteAdjustment, { compact: true })} افت
                           </p>
                         )}
@@ -132,7 +132,7 @@ export default async function RecipesPage() {
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[520px]">
                     <thead>
-                      <tr className="border-y border-ink-850">
+                      <tr className="border-y border-ink-100">
                         <th className="th">جزء</th>
                         <th className="th">مقدار</th>
                         <th className="th">واحد</th>
@@ -140,7 +140,7 @@ export default async function RecipesPage() {
                         <th className="th">هزینه</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-ink-850">
+                    <tbody className="divide-y divide-ink-100">
                       {recipe.items.map((item) => {
                         const line = result?.lines.find(
                           (l) => l.refId === (item.ingredientId ?? item.subRecipeId),
@@ -150,19 +150,19 @@ export default async function RecipesPage() {
                             <td className="td">
                               {item.ingredient?.namePersian ?? item.subRecipe?.namePersian}
                               {item.subRecipeId && (
-                                <span className="mr-2 rounded bg-ink-800 px-1.5 py-0.5 text-2xs text-ink-400">
+                                <span className="mr-2 rounded bg-ink-200 px-1.5 py-0.5 text-2xs text-ink-600">
                                   دستور میانی
                                 </span>
                               )}
                             </td>
                             <td className="td tabular">{faDigits(Number(item.quantity))}</td>
-                            <td className="td text-ink-500">{unitLabel.get(item.unitId)}</td>
-                            <td className="td tabular text-ink-500">
+                            <td className="td text-ink-600">{unitLabel.get(item.unitId)}</td>
+                            <td className="td tabular text-ink-600">
                               {Number(item.wastePercent) > 0
                                 ? formatPercent(item.wastePercent.toString(), { decimals: 0 })
                                 : '—'}
                             </td>
-                            <td className="td tabular text-ink-200">
+                            <td className="td tabular text-ink-700">
                               {line ? formatCurrency(line.totalCost) : '—'}
                             </td>
                           </tr>

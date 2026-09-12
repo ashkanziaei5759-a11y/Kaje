@@ -74,14 +74,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
-      <aside className="hidden lg:flex flex-col border-l border-ink-800 bg-ink-900 sticky top-0 h-screen">
-        <Link href="/dashboard" className="flex items-center gap-2.5 px-5 h-16 border-b border-ink-800">
-          <span className="grid size-8 place-items-center rounded-lg bg-saffron-400 text-ink-950 font-extrabold">
+      <aside className="sticky top-0 hidden h-screen flex-col border-l border-white/60 bg-white/[0.55] backdrop-blur-glass lg:flex">
+        <Link href="/dashboard" className="flex h-16 items-center gap-2.5 border-b border-white/60 px-5">
+          <span className="grid size-8 place-items-center rounded-lg bg-forest-500 text-ink-50 font-extrabold">
             ک
           </span>
           <div className="leading-none">
-            <p className="text-sm font-bold text-ink-50">{restaurant?.namePersian ?? 'کاژه'}</p>
-            <p className="mt-1 text-2xs text-ink-500 tracking-widest">KAJEH</p>
+            <p className="text-sm font-bold text-ink-900">{restaurant?.namePersian ?? 'کاژه'}</p>
+            <p className="mt-1 text-2xs text-ink-600 tracking-widest">KAJEH</p>
           </div>
         </Link>
 
@@ -100,30 +100,30 @@ export default async function DashboardLayout({ children }: { children: React.Re
           ))}
         </nav>
 
-        <div className="border-t border-ink-800 p-3">
+        <div className="border-t border-white/60 p-3">
           <UserMenu name={user.name} role={user.role} />
         </div>
       </aside>
 
       <div className="flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-ink-800 bg-ink-950/90 px-4 sm:px-6 backdrop-blur">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-white/60 bg-white/[0.45] px-4 backdrop-blur-glass sm:px-6">
           <Link href="/dashboard" className="lg:hidden flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-lg bg-saffron-400 text-ink-950 font-extrabold">ک</span>
+            <span className="grid size-8 place-items-center rounded-lg bg-forest-500 text-ink-50 font-extrabold">ک</span>
             <span className="font-bold">کاژه</span>
           </Link>
 
-          <div className="hidden lg:block text-sm text-ink-400">
+          <div className="hidden lg:block text-sm text-ink-600">
             {restaurant?.address}
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href="/alerts"
-              className="relative rounded-lg bg-ink-900 border border-ink-800 px-3 py-1.5 text-2xs text-ink-300 hover:border-ink-700 transition-colors"
+              className="relative rounded-lg bg-ink-0 border border-ink-200 px-3 py-1.5 text-2xs text-ink-600 hover:border-ink-300 transition-colors"
             >
               هشدارها
               {unreadAlerts > 0 && (
-                <span className="absolute -top-1.5 -left-1.5 grid min-w-5 h-5 place-items-center rounded-full bg-saffron-400 px-1 text-2xs font-bold text-ink-950 tabular">
+                <span className="absolute -top-1.5 -left-1.5 grid min-w-5 h-5 place-items-center rounded-full bg-forest-500 px-1 text-2xs font-bold text-ink-50 tabular">
                   {unreadAlerts.toLocaleString('fa-IR')}
                 </span>
               )}
@@ -135,7 +135,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </header>
 
         {/* Mobile navigation — the sidebar collapses to a scrolling rail. */}
-        <nav className="lg:hidden border-b border-ink-800 bg-ink-900 overflow-x-auto">
+        <nav className="overflow-x-auto border-b border-white/60 bg-white/[0.45] backdrop-blur-glass lg:hidden">
           <ul className="flex gap-1 p-2 min-w-max">
             {groups.flatMap((g) => g.items).map((item) => (
               <li key={item.href}>

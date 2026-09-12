@@ -70,14 +70,14 @@ export default async function PurchasesPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-semibold text-ink-50" dir="ltr">
+                  <h2 className="font-semibold text-ink-900" dir="ltr">
                     {purchase.invoiceNumber ?? `#${purchase.id.slice(-6)}`}
                   </h2>
                   <Badge tone={STATUS_META[purchase.status].tone}>
                     {STATUS_META[purchase.status].label}
                   </Badge>
                 </div>
-                <p className="mt-1 text-2xs text-ink-500">
+                <p className="mt-1 text-2xs text-ink-600">
                   {purchase.supplier.namePersian ?? purchase.supplier.name}
                   {' — '}
                   {formatJalali(purchase.purchaseDate)}
@@ -86,7 +86,7 @@ export default async function PurchasesPage() {
               </div>
               <div className="text-left">
                 <p className="label">مبلغ فاکتور</p>
-                <p className="mt-0.5 text-lg font-bold tabular text-ink-50">
+                <p className="mt-0.5 text-lg font-bold tabular text-ink-900">
                   {formatCurrency(purchase.totalAmount.toString(), { symbol })}
                 </p>
               </div>
@@ -95,7 +95,7 @@ export default async function PurchasesPage() {
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[520px]">
                 <thead>
-                  <tr className="border-y border-ink-850">
+                  <tr className="border-y border-ink-100">
                     <th className="th">ماده اولیه</th>
                     <th className="th">مقدار</th>
                     <th className="th">واحد</th>
@@ -103,16 +103,16 @@ export default async function PurchasesPage() {
                     <th className="th">مبلغ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ink-850">
+                <tbody className="divide-y divide-ink-100">
                   {purchase.items.map((item) => (
                     <tr key={item.id}>
                       <td className="td">{item.ingredient.namePersian}</td>
                       <td className="td tabular">{formatNumber(Number(item.quantity))}</td>
-                      <td className="td text-ink-500">{unitLabel.get(item.unitId)}</td>
-                      <td className="td tabular text-ink-400">
+                      <td className="td text-ink-600">{unitLabel.get(item.unitId)}</td>
+                      <td className="td tabular text-ink-600">
                         {formatCurrency(item.unitPrice.toString(), { compact: true })}
                       </td>
-                      <td className="td tabular text-ink-200">
+                      <td className="td tabular text-ink-700">
                         {formatCurrency(item.lineTotal.toString(), { compact: true })}
                       </td>
                     </tr>

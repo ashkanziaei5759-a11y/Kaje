@@ -61,13 +61,13 @@ export default async function CostingPage() {
           <article key={profile.id} className="card p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="font-semibold text-ink-50">{profile.namePersian}</h2>
-                <p className="text-2xs text-ink-500">{profile.name}</p>
+                <h2 className="font-semibold text-ink-900">{profile.namePersian}</h2>
+                <p className="text-2xs text-ink-600">{profile.name}</p>
               </div>
               {profile.isDefault && <Badge tone="accent">پیش‌فرض</Badge>}
             </div>
 
-            <p className="mt-2 text-2xs text-ink-500">
+            <p className="mt-2 text-2xs text-ink-600">
               {faDigits(profile.menuItems.length)} آیتم از این پروفایل استفاده می‌کند
             </p>
 
@@ -124,8 +124,8 @@ export default async function CostingPage() {
       </div>
 
       <section className="mt-6 card p-4">
-        <h2 className="text-sm font-semibold text-ink-100">فرمول‌های موتور</h2>
-        <p className="mt-1 text-2xs text-ink-500">
+        <h2 className="text-sm font-semibold text-ink-800">فرمول‌های موتور</h2>
+        <p className="mt-1 text-2xs text-ink-600">
           این‌ها دقیقاً همان فرمول‌هایی هستند که در محاسبه هر آیتم اجرا می‌شوند.
         </p>
         <div className="mt-3 space-y-2 font-mono text-2xs" dir="ltr">
@@ -141,12 +141,12 @@ export default async function CostingPage() {
             'food_cost_% = food_cost ÷ selling_price',
             'recommended_price = total_cost ÷ (1 − target_gross_margin)',
           ].map((formula) => (
-            <p key={formula} className="rounded-lg border border-ink-800 bg-ink-850 px-3 py-2 text-ink-300">
+            <p key={formula} className="rounded-lg border border-ink-200 bg-ink-100 px-3 py-2 text-ink-600">
               {formula}
             </p>
           ))}
         </div>
-        <p className="mt-3 text-2xs leading-6 text-ink-500">
+        <p className="mt-3 text-2xs leading-6 text-ink-600">
           توجه: قیمت پیشنهادی بر قیمت تمام‌شده <em>تقسیم</em> می‌شود، نه ضرب. اگر قیمت تمام‌شده
           ۳۴۵٬۰۰۰ را در ۱٫۳ ضرب کنیم، حاشیه سود واقعی ۲۳٪ می‌شود نه ۳۰٪ — چون حاشیه سود نسبت به
           قیمت فروش سنجیده می‌شود، نه نسبت به قیمت تمام‌شده.
@@ -154,10 +154,10 @@ export default async function CostingPage() {
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">اثر تنظیمات بر قیمت پیشنهادی</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">اثر تنظیمات بر قیمت پیشنهادی</h2>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">آیتم</th>
               <th className="th">قیمت تمام‌شده</th>
               <th className="th">پیشنهادی (خام)</th>
@@ -167,17 +167,17 @@ export default async function CostingPage() {
               <th className="th">منبع قیمت</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {costed.map((item) => {
               const gap = Number(item.recommendedPrice) - Number(item.sellingPrice);
               return (
                 <tr key={item.menuItemId}>
                   <td className="td">{item.namePersian}</td>
-                  <td className="td tabular text-ink-400">{formatCurrency(item.totalCost, { compact: true })}</td>
-                  <td className="td tabular text-ink-500">{formatCurrency(item.rawRecommendedPrice, { compact: true })}</td>
-                  <td className="td tabular text-saffron-400">{formatCurrency(item.recommendedPrice, { compact: true })}</td>
-                  <td className="td tabular text-ink-100">{formatCurrency(item.sellingPrice, { compact: true })}</td>
-                  <td className={`td tabular ${Math.abs(gap) < 1000 ? 'text-ink-600' : gap > 0 ? 'text-saffron-400' : 'text-pistachio-400'}`}>
+                  <td className="td tabular text-ink-600">{formatCurrency(item.totalCost, { compact: true })}</td>
+                  <td className="td tabular text-ink-600">{formatCurrency(item.rawRecommendedPrice, { compact: true })}</td>
+                  <td className="td tabular text-forest-500">{formatCurrency(item.recommendedPrice, { compact: true })}</td>
+                  <td className="td tabular text-ink-800">{formatCurrency(item.sellingPrice, { compact: true })}</td>
+                  <td className={`td tabular ${Math.abs(gap) < 1000 ? 'text-ink-400' : gap > 0 ? 'text-forest-500' : 'text-pistachio-400'}`}>
                     {Math.abs(gap) < 1000 ? '—' : formatCurrency(gap, { compact: true })}
                   </td>
                   <td className="td">
@@ -198,7 +198,7 @@ export default async function CostingPage() {
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-ink-800 bg-ink-850 p-2.5">
+    <div className="rounded-lg border border-ink-200 bg-ink-100 p-2.5">
       <p className="label mb-1.5">{title}</p>
       <div className="space-y-1">{children}</div>
     </div>
@@ -208,8 +208,8 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 function Row({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
   return (
     <div className="flex justify-between gap-2 text-2xs">
-      <span className="text-ink-500">{label}</span>
-      <span className={`tabular ${emphasis ? 'font-semibold text-saffron-400' : 'text-ink-200'}`}>
+      <span className="text-ink-600">{label}</span>
+      <span className={`tabular ${emphasis ? 'font-semibold text-forest-500' : 'text-ink-700'}`}>
         {value}
       </span>
     </div>

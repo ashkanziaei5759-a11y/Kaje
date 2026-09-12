@@ -15,12 +15,12 @@ export function NavLink({ href, label, compact = false }: { href: string; label:
       className={
         compact
           ? `block whitespace-nowrap rounded-lg px-3 py-1.5 text-2xs transition-colors ${
-              isActive ? 'bg-saffron-400 text-ink-950 font-semibold' : 'text-ink-300 hover:bg-ink-800'
+              isActive ? 'bg-forest-500 text-ink-50 font-semibold' : 'text-ink-600 hover:bg-ink-200'
             }`
           : `block rounded-lg px-2.5 py-2 text-sm transition-colors ${
               isActive
-                ? 'bg-ink-800 text-saffron-400 font-medium'
-                : 'text-ink-300 hover:bg-ink-850 hover:text-ink-100'
+                ? 'bg-ink-200 text-forest-500 font-medium'
+                : 'text-ink-600 hover:bg-ink-100 hover:text-ink-800'
             }`
       }
     >

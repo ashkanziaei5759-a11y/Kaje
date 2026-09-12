@@ -47,7 +47,7 @@ export default async function AlertsPage() {
 
       <section className="mt-6 space-y-2">
         {alerts.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-ink-500">هشداری ثبت نشده است.</div>
+          <div className="card p-10 text-center text-sm text-ink-600">هشداری ثبت نشده است.</div>
         ) : (
           alerts.map((alert) => (
             <article
@@ -57,23 +57,23 @@ export default async function AlertsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold text-ink-50">{alert.title}</h2>
+                    <h2 className="font-semibold text-ink-900">{alert.title}</h2>
                     <Badge tone={alert.severity === 'CRITICAL' ? 'negative' : alert.severity === 'WARNING' ? 'warning' : 'neutral'}>
                       {alert.severity === 'CRITICAL' ? 'بحرانی' : alert.severity === 'WARNING' ? 'هشدار' : 'اطلاع'}
                     </Badge>
                     <Badge tone="neutral">{TYPE_LABELS[alert.type] ?? alert.type}</Badge>
                   </div>
-                  <p className="mt-1.5 text-2xs leading-6 text-ink-400">{alert.message}</p>
+                  <p className="mt-1.5 text-2xs leading-6 text-ink-600">{alert.message}</p>
                   {alert.entityType === 'MenuItem' && alert.entityId && (
                     <Link
                       href={`/menu-items/${alert.entityId}`}
-                      className="mt-2 inline-block text-2xs text-saffron-400 hover:underline"
+                      className="mt-2 inline-block text-2xs text-forest-500 hover:underline"
                     >
                       مشاهده آیتم ←
                     </Link>
                   )}
                 </div>
-                <time className="shrink-0 text-2xs text-ink-600">
+                <time className="shrink-0 text-2xs text-ink-400">
                   {formatJalaliDateTime(alert.createdAt)}
                 </time>
               </div>

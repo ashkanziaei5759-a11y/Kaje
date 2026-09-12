@@ -51,25 +51,25 @@ export default async function ExpensesPage({
       </div>
 
       <section className="mt-6 card p-4">
-        <h2 className="text-sm font-semibold text-ink-100">به تفکیک دسته</h2>
+        <h2 className="text-sm font-semibold text-ink-800">به تفکیک دسته</h2>
         <ul className="mt-3 space-y-2">
           {summary.byCategory.map((category) => (
             <li key={category.namePersian}>
               <div className="flex items-baseline justify-between text-2xs">
-                <span className="text-ink-300">
+                <span className="text-ink-600">
                   {category.namePersian}
-                  {category.isLabor && <span className="mr-2 text-ink-600">حقوق</span>}
+                  {category.isLabor && <span className="mr-2 text-ink-400">حقوق</span>}
                 </span>
-                <span className="tabular text-ink-200">
+                <span className="tabular text-ink-700">
                   {formatCurrency(category.amount, { compact: true })}
-                  <span className="mr-2 text-ink-600">
+                  <span className="mr-2 text-ink-400">
                     {formatPercent(total > 0 ? Number(category.amount) / total : 0, { decimals: 0 })}
                   </span>
                 </span>
               </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-850">
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-100">
                 <div
-                  className={`h-full rounded-full ${category.isLabor ? 'bg-ink-400' : 'bg-saffron-400'}`}
+                  className={`h-full rounded-full ${category.isLabor ? 'bg-ink-500' : 'bg-forest-500'}`}
                   style={{ width: `${total > 0 ? (Number(category.amount) / total) * 100 : 0}%` }}
                 />
               </div>
@@ -79,15 +79,15 @@ export default async function ExpensesPage({
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">رکوردهای هزینه</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">رکوردهای هزینه</h2>
         {expenses.length === 0 ? (
-          <div className="card p-8 text-center text-2xs text-ink-500">
+          <div className="card p-8 text-center text-2xs text-ink-600">
             در این بازه هزینه‌ای ثبت نشده است.
           </div>
         ) : (
           <Table>
             <thead>
-              <tr className="border-b border-ink-800">
+              <tr className="border-b border-ink-200">
                 <th className="th">تاریخ</th>
                 <th className="th">دسته</th>
                 <th className="th">شرح</th>
@@ -97,24 +97,24 @@ export default async function ExpensesPage({
                 <th className="th">ثبت‌کننده</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-850">
+            <tbody className="divide-y divide-ink-100">
               {expenses.map((expense) => (
                 <tr key={expense.id}>
-                  <td className="td text-2xs text-ink-500">{formatJalali(expense.expenseDate)}</td>
+                  <td className="td text-2xs text-ink-600">{formatJalali(expense.expenseDate)}</td>
                   <td className="td">{expense.category.namePersian}</td>
-                  <td className="td text-ink-400 max-w-[16rem] truncate">{expense.description ?? '—'}</td>
+                  <td className="td text-ink-600 max-w-[16rem] truncate">{expense.description ?? '—'}</td>
                   <td className="td">
                     <Badge tone={expense.type === 'FIXED' ? 'neutral' : 'warning'}>
                       {TYPE_LABELS[expense.type]}
                     </Badge>
                   </td>
-                  <td className="td text-2xs text-ink-500">
+                  <td className="td text-2xs text-ink-600">
                     {expense.supplier?.namePersian ?? expense.payee ?? '—'}
                   </td>
-                  <td className="td tabular text-ink-100">
+                  <td className="td tabular text-ink-800">
                     {formatCurrency(expense.amount.toString(), { compact: true })}
                   </td>
-                  <td className="td text-2xs text-ink-500">{expense.createdBy?.name ?? '—'}</td>
+                  <td className="td text-2xs text-ink-600">{expense.createdBy?.name ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

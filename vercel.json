@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "regions": ["fra1"],
+  "functions": {
+    "src/app/api/menu-items/[id]/image/route.ts": {
+      "maxDuration": 30,
+      "memory": 2048
+    }
+  }
+}

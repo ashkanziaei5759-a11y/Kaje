@@ -61,7 +61,7 @@ export default async function ReportsPage({
 
       {/* Profit & loss */}
       <section className="card p-5">
-        <h2 className="text-sm font-semibold text-ink-100">صورت سود و زیان</h2>
+        <h2 className="text-sm font-semibold text-ink-800">صورت سود و زیان</h2>
         <dl className="mt-4 space-y-1">
           <PLRow label="فروش خالص" value={summary.revenue} symbol={symbol} share={1} bold />
           <PLRow label="هزینه مواد اولیه" value={`-${summary.foodCost}`} symbol={symbol}
@@ -77,7 +77,7 @@ export default async function ReportsPage({
           <PLRow label="سود خالص" value={String(netProfit)} symbol={symbol}
             share={revenue > 0 ? netProfit / revenue : 0} bold divider />
         </dl>
-        <p className="mt-3 text-2xs leading-6 text-ink-500">
+        <p className="mt-3 text-2xs leading-6 text-ink-600">
           هزینه مواد اولیه و نیروی کار از «عکس لحظه‌ای هزینه» هر فروش خوانده می‌شود، نه از
           قیمت‌های امروز — بنابراین سود دوره‌های گذشته با تغییر قیمت مواد اولیه تغییر نمی‌کند.
         </p>
@@ -85,10 +85,10 @@ export default async function ReportsPage({
 
       {/* Actual vs theoretical */}
       <section className="mt-4">
-        <h2 className="mb-1 text-sm font-semibold text-ink-100">
+        <h2 className="mb-1 text-sm font-semibold text-ink-800">
           قیمت تمام‌شده واقعی در برابر تئوریک
         </h2>
-        <p className="mb-3 text-2xs text-ink-500">
+        <p className="mb-3 text-2xs text-ink-600">
           تئوریک: آنچه دستور پخت‌ها می‌گویند باید مصرف شده باشد. واقعی: موجودی اول دوره + خرید −
           موجودی پایان دوره. اختلاف این دو، چیزی است که بدون ثبت از انبار خارج شده.
         </p>
@@ -119,7 +119,7 @@ export default async function ReportsPage({
                 <Badge key={cause} tone="warning">{CAUSE_LABELS[cause] ?? cause}</Badge>
               ))}
             </div>
-            <p className="mt-3 text-2xs leading-6 text-ink-500">
+            <p className="mt-3 text-2xs leading-6 text-ink-600">
               انحراف مثبت یعنی بیش از آنچه دستور پخت‌ها توضیح می‌دهند از انبار خارج شده.
               انحراف منفی معمولاً نشانه خطای داده است، نه صرفه‌جویی.
             </p>
@@ -129,10 +129,10 @@ export default async function ReportsPage({
 
       {/* Item profitability */}
       <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-ink-100">سودآوری آیتم‌ها</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">سودآوری آیتم‌ها</h2>
         <Table>
           <thead>
-            <tr className="border-b border-ink-800">
+            <tr className="border-b border-ink-200">
               <th className="th">آیتم</th>
               <th className="th">تعداد</th>
               <th className="th">فروش</th>
@@ -142,18 +142,18 @@ export default async function ReportsPage({
               <th className="th">سهم از فروش</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink-850">
+          <tbody className="divide-y divide-ink-100">
             {items.map((item) => (
               <tr key={item.menuItemId}>
                 <td className="td">{item.namePersian}</td>
                 <td className="td tabular">{faDigits(item.unitsSold)}</td>
                 <td className="td tabular">{formatCurrency(item.revenue, { compact: true })}</td>
-                <td className="td tabular text-ink-400">{formatCurrency(item.cost, { compact: true })}</td>
+                <td className="td tabular text-ink-600">{formatCurrency(item.cost, { compact: true })}</td>
                 <td className={`td tabular ${Number(item.profit) > 0 ? 'text-pistachio-400' : 'text-pomegranate-400'}`}>
                   {formatCurrency(item.profit, { compact: true })}
                 </td>
                 <td className="td tabular">{formatPercent(item.marginPct)}</td>
-                <td className="td tabular text-ink-500">
+                <td className="td tabular text-ink-600">
                   {formatPercent(revenue > 0 ? Number(item.revenue) / revenue : 0)}
                 </td>
               </tr>
@@ -164,14 +164,14 @@ export default async function ReportsPage({
 
       <section className="mt-6 grid lg:grid-cols-2 gap-4">
         <div className="card p-4">
-          <h2 className="text-sm font-semibold text-ink-100">ارزش‌گذاری انبار</h2>
-          <p className="mt-3 text-2xl font-bold tabular text-ink-50">
+          <h2 className="text-sm font-semibold text-ink-800">ارزش‌گذاری انبار</h2>
+          <p className="mt-3 text-2xl font-bold tabular text-ink-900">
             {formatCurrency(stockValue.toFixed(), { symbol })}
           </p>
-          <p className="mt-1 text-2xs text-ink-500">بر پایه میانگین موزون قیمت خرید</p>
+          <p className="mt-1 text-2xs text-ink-600">بر پایه میانگین موزون قیمت خرید</p>
         </div>
         <div className="card p-4">
-          <h2 className="text-sm font-semibold text-ink-100">شاخص‌های کلیدی</h2>
+          <h2 className="text-sm font-semibold text-ink-800">شاخص‌های کلیدی</h2>
           <dl className="mt-3 space-y-2 text-2xs">
             <Kv label="درصد مواد اولیه" value={formatPercent(summary.foodCostPct)} />
             <Kv label="درصد نیروی کار" value={formatPercent(summary.laborCostPct)} />
@@ -194,15 +194,15 @@ function PLRow({
 }) {
   const n = Number(value);
   return (
-    <div className={`flex items-center justify-between gap-4 py-1.5 ${divider ? 'border-t border-ink-800 mt-1 pt-2.5' : ''}`}>
-      <dt className={`text-2xs ${bold ? 'font-semibold text-ink-100' : 'text-ink-400'}`}>{label}</dt>
+    <div className={`flex items-center justify-between gap-4 py-1.5 ${divider ? 'border-t border-ink-200 mt-1 pt-2.5' : ''}`}>
+      <dt className={`text-2xs ${bold ? 'font-semibold text-ink-800' : 'text-ink-600'}`}>{label}</dt>
       <dd className="flex items-baseline gap-4">
-        <span className={`tabular text-2xs w-14 text-left ${share < 0 ? 'text-ink-600' : 'text-ink-500'}`}>
+        <span className={`tabular text-2xs w-14 text-left ${share < 0 ? 'text-ink-400' : 'text-ink-600'}`}>
           {formatPercent(share, { decimals: 1 })}
         </span>
         <span className={`tabular w-32 text-left ${
           bold ? 'text-base font-bold' : 'text-sm'
-        } ${n < 0 ? 'text-pomegranate-400' : bold ? 'text-ink-50' : 'text-ink-200'}`}>
+        } ${n < 0 ? 'text-pomegranate-400' : bold ? 'text-ink-900' : 'text-ink-700'}`}>
           {formatCurrency(Math.abs(n), { symbol: bold ? symbol : undefined, compact: true })}
         </span>
       </dd>
@@ -213,8 +213,8 @@ function PLRow({
 function Kv({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-ink-500">{label}</dt>
-      <dd className="tabular text-ink-200">{value}</dd>
+      <dt className="text-ink-600">{label}</dt>
+      <dd className="tabular text-ink-700">{value}</dd>
     </div>
   );
 }

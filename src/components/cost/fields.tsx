@@ -27,14 +27,14 @@ export function Field({
 }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="mb-1.5 block text-2xs font-medium text-ink-300">
+      <label htmlFor={htmlFor} className="mb-1.5 block text-2xs font-medium text-ink-600">
         {label}
       </label>
       {children}
       {error ? (
         <p className="mt-1 text-2xs text-pomegranate-400">{error}</p>
       ) : hint ? (
-        <p className="mt-1 text-2xs leading-5 text-ink-500">{hint}</p>
+        <p className="mt-1 text-2xs leading-5 text-ink-600">{hint}</p>
       ) : null}
     </div>
   );
@@ -71,13 +71,13 @@ export function NumberField({
           aria-describedby={error ? errorId : undefined}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`tabular h-11 w-full rounded-lg border bg-ink-850 px-3 text-left text-sm
-            text-ink-50 transition-colors focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none disabled:opacity-50
-            ${error ? 'border-pomegranate-500' : 'border-ink-700 focus:border-saffron-400'}
+          className={`tabular h-11 w-full rounded-lg border bg-ink-100 px-3 text-left text-sm
+            text-ink-900 transition-colors focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none disabled:opacity-50
+            ${error ? 'border-pomegranate-500' : 'border-ink-300 focus:border-forest-500'}
             ${suffix ? 'pl-14' : ''}`}
         />
         {suffix && (
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-2xs text-ink-500">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-2xs text-ink-600">
             {suffix}
           </span>
         )}
@@ -125,11 +125,11 @@ export function PercentField({
             if (raw === '') { onChange(''); return; }
             onChange(String(Number(raw) / 100));
           }}
-          className={`tabular h-11 w-full rounded-lg border bg-ink-850 pl-8 pr-3 text-left text-sm
-            text-ink-50 transition-colors focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none
-            ${error ? 'border-pomegranate-500' : 'border-ink-700 focus:border-saffron-400'}`}
+          className={`tabular h-11 w-full rounded-lg border bg-ink-100 pl-8 pr-3 text-left text-sm
+            text-ink-900 transition-colors focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none
+            ${error ? 'border-pomegranate-500' : 'border-ink-300 focus:border-forest-500'}`}
         />
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-2xs text-ink-500">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-2xs text-ink-600">
           ٪
         </span>
       </div>
@@ -154,8 +154,8 @@ export function SelectField({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-lg border border-ink-700 bg-ink-850 px-3 text-sm
-                   text-ink-50 focus:border-saffron-400 focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 focus:outline-none"
+        className="h-11 w-full rounded-lg border border-ink-300 bg-ink-100 px-3 text-sm
+                   text-ink-900 focus:border-forest-500 focus-visible:ring-2 focus-visible:ring-forest-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-0 focus:outline-none"
       >
         {options.map(([v, label]) => (
           <option key={v} value={v}>{label}</option>
@@ -178,14 +178,14 @@ export function Delta({
   const a = Number(from);
   const b = Number(to);
   const changed = Math.abs(b - a) > 0.0001;
-  if (!changed) return <span className="tabular text-ink-100">{format(to)}</span>;
+  if (!changed) return <span className="tabular text-ink-800">{format(to)}</span>;
 
   const rose = b > a;
   const good = invert ? !rose : rose;
 
   return (
     <span className="inline-flex items-baseline gap-1.5">
-      <span className="tabular text-2xs text-ink-600 line-through">{format(from)}</span>
+      <span className="tabular text-2xs text-ink-400 line-through">{format(from)}</span>
       <span className={`tabular font-semibold ${good ? 'text-pistachio-400' : 'text-pomegranate-400'}`}>
         {format(to)}
       </span>

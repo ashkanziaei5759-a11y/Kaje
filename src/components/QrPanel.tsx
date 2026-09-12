@@ -84,8 +84,8 @@ export function QrPanel({
 
   return (
     <section className="card p-4">
-      <h2 className="text-sm font-semibold text-ink-100">{label}</h2>
-      <p className="mt-0.5 text-2xs text-ink-500">
+      <h2 className="text-sm font-semibold text-ink-800">{label}</h2>
+      <p className="mt-0.5 text-2xs text-ink-600">
         {scanCount.toLocaleString('fa-IR')} بار اسکن شده
       </p>
 
@@ -100,9 +100,9 @@ export function QrPanel({
         />
       </div>
 
-      <div className="mt-3 rounded-lg border border-ink-800 bg-ink-850 p-2.5">
+      <div className="mt-3 rounded-lg border border-ink-200 bg-ink-100 p-2.5">
         <p className="label mb-1">نشانی منو</p>
-        <p className="break-all text-2xs text-ink-300" dir="ltr">{url}</p>
+        <p className="break-all text-2xs text-ink-600" dir="ltr">{url}</p>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">

@@ -25,7 +25,7 @@ export function RangePicker({ current }: { current: string }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-1 rounded-lg border border-ink-800 bg-ink-900 p-1">
+    <div className="flex flex-wrap gap-1 rounded-lg border border-ink-200 bg-ink-0 p-1">
       {PRESETS.map(([value, label]) => (
         <button
           key={value}
@@ -33,8 +33,8 @@ export function RangePicker({ current }: { current: string }) {
           aria-pressed={current === value}
           className={`rounded-md px-3 py-1.5 text-2xs transition-colors ${
             current === value
-              ? 'bg-saffron-400 text-ink-950 font-semibold'
-              : 'text-ink-400 hover:bg-ink-800 hover:text-ink-200'
+              ? 'bg-forest-500 text-ink-50 font-semibold'
+              : 'text-ink-600 hover:bg-ink-200 hover:text-ink-700'
           }`}
         >
           {label}

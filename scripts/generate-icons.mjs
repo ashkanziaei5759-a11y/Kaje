@@ -14,8 +14,8 @@
 import sharp from 'sharp';
 import { writeFile, mkdir } from 'node:fs/promises';
 
-const SAFFRON = '#E8A33D';
-const INK = '#0B0E13';
+const FOREST = '#136240';
+const INK = '#FFFFFF';
 
 /** The Kajeh mark: ک on a saffron tile. */
 const tile = (size, inset) => {
@@ -26,11 +26,11 @@ const tile = (size, inset) => {
 
   return Buffer.from(`
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" fill="${INK}"/>
-  <rect x="${pad}" y="${pad}" width="${inner}" height="${inner}" rx="${radius}" fill="${SAFFRON}"/>
+  <rect width="${size}" height="${size}" fill="#FFFFFF"/>
+  <rect x="${pad}" y="${pad}" width="${inner}" height="${inner}" rx="${radius}" fill="${FOREST}"/>
   <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central"
         font-family="Vazirmatn, 'Noto Sans Arabic', 'DejaVu Sans', sans-serif"
-        font-size="${fontSize}" font-weight="800" fill="${INK}">ک</text>
+        font-size="${fontSize}" font-weight="800" fill="#FFFFFF">ک</text>
 </svg>`);
 };
 

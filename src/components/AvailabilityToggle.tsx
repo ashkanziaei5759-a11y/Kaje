@@ -42,11 +42,11 @@ export function AvailabilityToggle({
   return (
     <div className="flex shrink-0 items-center gap-2">
       {autoSoldOut && (
-        <span className="text-2xs text-ink-600" title="در صورت اتمام موجودی، خودکار ناموجود می‌شود">
+        <span className="text-2xs text-ink-400" title="در صورت اتمام موجودی، خودکار ناموجود می‌شود">
           خودکار
         </span>
       )}
-      <div className="flex gap-0.5 rounded-lg border border-ink-800 bg-ink-850 p-0.5">
+      <div className="flex gap-0.5 rounded-lg border border-ink-200 bg-ink-100 p-0.5">
         {OPTIONS.map(([option, label]) => (
           <button
             key={option}
@@ -56,11 +56,11 @@ export function AvailabilityToggle({
             className={`rounded-md px-2.5 py-1 text-2xs transition-colors ${
               value === option
                 ? option === 'AVAILABLE'
-                  ? 'bg-pistachio-500 text-ink-950 font-semibold'
+                  ? 'bg-pistachio-500 text-ink-50 font-semibold'
                   : option === 'UNAVAILABLE'
                     ? 'bg-pomegranate-500 text-white font-semibold'
-                    : 'bg-ink-600 text-ink-100 font-semibold'
-                : 'text-ink-500 hover:text-ink-300'
+                    : 'bg-ink-400 text-ink-800 font-semibold'
+                : 'text-ink-600 hover:text-ink-600'
             }`}
           >
             {label}
