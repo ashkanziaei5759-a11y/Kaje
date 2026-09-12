@@ -9,6 +9,7 @@ import 'server-only';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
+import { DEMO_MODE } from '@/lib/db';
 
 const COOKIE_NAME = 'kajeh_session';
 const SESSION_DURATION_SECONDS = 60 * 60 * 12; // 12 hours
@@ -24,8 +25,20 @@ export interface SessionUser {
   permissions: string[];
 }
 
+/**
+ * The demo build has no way to receive an AUTH_SECRET and no secret worth
+ * keeping: its credentials are published on the landing page and its database
+ * is thrown away when the instance is recycled. A fixed key keeps sessions
+ * valid across serverless instances, which a random per-instance key would not.
+ *
+ * This can only ever apply when DEMO_MODE is on, and DEMO_MODE requires that no
+ * DATABASE_URL exists — so a deployment holding real data cannot reach it. Such
+ * a deployment still fails loudly if its AUTH_SECRET is missing.
+ */
+const DEMO_SECRET = 'kajeh-demo-build-signing-key-not-a-secret-0000';
+
 function secretKey(): Uint8Array {
-  const secret = process.env.AUTH_SECRET;
+  const secret = process.env.AUTH_SECRET ?? (DEMO_MODE ? DEMO_SECRET : undefined);
   if (!secret || secret.length < 32) {
     throw new Error(
       'AUTH_SECRET is missing or shorter than 32 characters. ' +
