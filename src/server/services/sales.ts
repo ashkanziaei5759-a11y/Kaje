@@ -13,7 +13,7 @@
  */
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { prisma } from '@/lib/db';
+import { prisma, TX_TIMEOUT_MS } from '@/lib/db';
 import { Decimal, d, money, percent, ratio } from '@/lib/money';
 import { costMenuItem, costRecipe } from '@/lib/engine/cost-engine';
 import { mergeDepletion, type DepletionLine } from '@/lib/engine/inventory-engine';
@@ -231,7 +231,7 @@ export async function confirmOrder(args: {
     });
 
     return { itemsDepleted: merged.length, totalCost: money(orderTotalCost).toFixed() };
-  }, { timeout: 30_000 });
+  }, { timeout: TX_TIMEOUT_MS });
 }
 
 /**
@@ -291,5 +291,5 @@ export async function reverseOrder(args: {
     });
 
     return { movementsReversed: original.length };
-  }, { timeout: 30_000 });
+  }, { timeout: TX_TIMEOUT_MS });
 }

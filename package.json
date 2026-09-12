@@ -5,7 +5,7 @@
   "description": "Kajeh / کاژه — Restaurant management, costing & profitability platform",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && bash scripts/prepare-db.sh && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -16,17 +16,20 @@
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "tsx --conditions=react-server prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "db:demo": "rm -f prisma/demo-db.tar.gz && KAJEH_DEMO=1 KAJEH_HISTORY_DAYS=${KAJEH_HISTORY_DAYS:-28} tsx --conditions=react-server scripts/build-demo-db.ts"
   },
   "prisma": {
     "seed": "tsx --conditions=react-server prisma/seed.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
     "decimal.js": "^10.4.3",
     "jose": "^5.9.6",
     "next": "^15.1.6",
+    "pglite-prisma-adapter": "^0.6.1",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

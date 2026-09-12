@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ServiceWorkerRegistrar } from '@/components/menu/ServiceWorkerRegistrar';
+import { DemoNotice } from '@/components/system/DemoNotice';
 
 export const metadata: Metadata = {
   title: { default: 'کاژه | مدیریت رستوران', template: '%s | کاژه' },
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl">
       <body>
+        <DemoNotice />
         {children}
         <ServiceWorkerRegistrar />
       </body>

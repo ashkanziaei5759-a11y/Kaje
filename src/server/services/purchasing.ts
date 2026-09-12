@@ -12,7 +12,7 @@
  * afterwards, so partial success is not an acceptable outcome.
  */
 import 'server-only';
-import { prisma } from '@/lib/db';
+import { prisma, TX_TIMEOUT_MS } from '@/lib/db';
 import { Decimal, d, money } from '@/lib/money';
 import { normalisePurchaseLine, type UnitDef } from '@/lib/units';
 import { recordMovement } from './inventory';
@@ -210,7 +210,7 @@ export async function approvePurchase(args: {
     });
 
     return { linesApplied: purchase.items.length, alertsRaised };
-  }, { timeout: 30_000 });
+  }, { timeout: TX_TIMEOUT_MS });
 }
 
 /** Recomputes a purchase's totals from its lines. Called on every edit. */

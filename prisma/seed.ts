@@ -8,13 +8,12 @@
  *
  * Run with: npm run db:seed
  */
-import { PrismaClient, type Prisma } from '@prisma/client';
+import { type Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 import { DEFAULT_UNITS } from '../src/lib/units';
 import { DEFAULT_ROLE_PERMISSIONS } from '../src/lib/auth/permissions';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/db';
 
 /** Deterministic PRNG so every seed run produces the same demo history. */
 function makeRandom(seed: number) {
@@ -25,6 +24,14 @@ function makeRandom(seed: number) {
   };
 }
 const random = makeRandom(20260908);
+
+/**
+ * Length of the generated sales history. Sixty days gives menu engineering and
+ * the variance reports plenty to chew on; the demo snapshot build shortens it,
+ * because PGlite writes an order of magnitude slower than a real server and the
+ * whole history has to be generated inside one CI build.
+ */
+const HISTORY_DAYS = Number(process.env.KAJEH_HISTORY_DAYS ?? 60);
 const pick = <T>(arr: T[]): T => arr[Math.floor(random() * arr.length)];
 const between = (min: number, max: number) => Math.floor(random() * (max - min + 1)) + min;
 
@@ -39,7 +46,7 @@ async function resetDatabase(): Promise<void> {
   await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`);
 }
 
-async function main() {
+export async function main() {
   console.log('🍽  Seeding Kajeh / کاژه …');
 
   // Idempotent: wipe and rebuild.
@@ -917,9 +924,9 @@ async function main() {
   };
 
   let orderCounter = 1;
-  console.log('   generating 60 days of sales …');
+  console.log(`   generating ${HISTORY_DAYS} days of sales …`);
 
-  for (let daysAgo = 59; daysAgo >= 0; daysAgo--) {
+  for (let daysAgo = HISTORY_DAYS - 1; daysAgo >= 0; daysAgo--) {
     // Thursday/Friday are the Iranian weekend — busier.
     const day = new Date(Date.now() - daysAgo * 86_400_000);
     const isWeekend = day.getDay() === 4 || day.getDay() === 5;
@@ -1028,9 +1035,13 @@ async function main() {
   console.log('   inventory@kajeh.ir  / Kajeh@1404   (انباردار)\n');
 }
 
-main()
-  .catch((error) => {
-    console.error('Seed failed:', error);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Running this file directly seeds; importing it (the demo-snapshot builder)
+// does not.
+if (process.argv[1] && process.argv[1].endsWith('seed.ts')) {
+  main()
+    .catch((error) => {
+      console.error('Seed failed:', error);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

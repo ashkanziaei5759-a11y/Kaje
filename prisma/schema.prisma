@@ -13,7 +13,8 @@
 //   live in CostingProfile / Settings rows so they stay configurable.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
