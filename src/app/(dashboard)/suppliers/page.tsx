@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { PageHeader, KpiCard, Table, Badge } from '@/components/ui';
 import { formatCurrency, formatPercent, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { SupplierForm } from '@/components/ops/SupplierForm';
 
 export const metadata = { title: 'تأمین‌کنندگان' };
 export const dynamic = 'force-dynamic';
@@ -50,6 +52,8 @@ export default async function SuppliersPage() {
   return (
     <>
       <PageHeader title="تأمین‌کنندگان" subtitle="سابقه خرید، شرایط پرداخت و مقایسه قیمت" />
+
+      {hasPermission(user.permissions, PERMISSIONS.SUPPLIER_WRITE) ? <SupplierForm /> : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="تأمین‌کنندگان" value={faDigits(suppliers.length)} />

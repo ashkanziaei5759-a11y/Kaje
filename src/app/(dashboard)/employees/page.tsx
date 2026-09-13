@@ -2,6 +2,8 @@ import { requireUser } from '@/lib/auth/guard';
 import { prisma } from '@/lib/db';
 import { PageHeader, KpiCard, Table, Badge } from '@/components/ui';
 import { formatCurrency, formatPercent, faDigits } from '@/lib/format';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { EmployeeForm } from '@/components/ops/EmployeeForm';
 
 export const metadata = { title: 'کارکنان' };
 export const dynamic = 'force-dynamic';
@@ -56,6 +58,10 @@ export default async function EmployeesPage() {
         title="کارکنان و هزینه نیروی کار"
         subtitle="نرخ هر دقیقه کار، پایه محاسبه هزینه مستقیم نیروی کار در هر غذاست"
       />
+
+      {hasPermission(user.permissions, PERMISSIONS.EMPLOYEE_WRITE) ? (
+        <EmployeeForm currency={symbol} />
+      ) : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="کارکنان فعال" value={faDigits(active.length)} />

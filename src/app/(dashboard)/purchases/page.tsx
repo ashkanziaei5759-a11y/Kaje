@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { PageHeader, KpiCard, Badge, Table } from '@/components/ui';
 import { formatCurrency, formatNumber, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { PurchaseForm } from '@/components/ops/PurchaseForm';
 
 export const metadata = { title: 'خریدها' };
 export const dynamic = 'force-dynamic';
@@ -38,6 +40,26 @@ export default async function PurchasesPage() {
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
+
+  const canRecord = hasPermission(user.permissions, PERMISSIONS.PURCHASE_WRITE);
+  const canApprove = hasPermission(user.permissions, PERMISSIONS.PURCHASE_APPROVE);
+  const [purchaseSuppliers, purchasable, purchaseUnits] = canRecord
+    ? await Promise.all([
+        prisma.supplier.findMany({
+          where: { restaurantId: user.restaurantId, isActive: true },
+          orderBy: { name: 'asc' },
+        }),
+        prisma.ingredient.findMany({
+          where: { restaurantId: user.restaurantId, isActive: true },
+          select: {
+            id: true, namePersian: true, purchaseUnitId: true, lastPurchasePrice: true,
+          },
+          orderBy: { namePersian: 'asc' },
+        }),
+        prisma.unitDefinition.findMany({ where: { restaurantId: user.restaurantId } }),
+      ])
+    : [[], [], []];
+  const purchaseUnitLabel = new Map(purchaseUnits.map((u) => [u.id, u.labelPersian]));
   const unitLabel = new Map(units.map((u) => [u.id, u.labelPersian]));
   const pending = purchases.filter((p) => p.status !== 'APPROVED' && p.status !== 'CANCELLED').length;
 
@@ -47,6 +69,20 @@ export default async function PurchasesPage() {
         title="خریدها و فاکتورها"
         subtitle="با تأیید هر فاکتور، موجودی انبار و قیمت تمام‌شده غذاها به‌صورت خودکار به‌روز می‌شود"
       />
+
+      {canRecord ? (
+        <PurchaseForm
+          currency={symbol}
+          canApprove={canApprove}
+          suppliers={purchaseSuppliers.map((s) => ({ id: s.id, label: s.namePersian || s.name }))}
+          ingredients={purchasable.map((i) => ({
+            id: i.id,
+            label: i.namePersian,
+            unit: purchaseUnitLabel.get(i.purchaseUnitId) ?? '',
+            lastPrice: i.lastPurchasePrice.toString(),
+          }))}
+        />
+      ) : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard

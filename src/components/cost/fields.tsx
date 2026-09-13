@@ -31,11 +31,11 @@ export function Field({
         {label}
       </label>
       {children}
-      {error ? (
-        <p className="mt-1 text-2xs text-pomegranate-400">{error}</p>
-      ) : hint ? (
-        <p className="mt-1 text-2xs leading-5 text-ink-600">{hint}</p>
-      ) : null}
+      {/* The hint stays put when an error appears. An error says what is wrong;
+          the hint says what the field means, and that is precisely what someone
+          who just got it wrong still needs to read. */}
+      {hint ? <p className="mt-1 text-2xs leading-5 text-ink-600">{hint}</p> : null}
+      {error ? <p className="mt-1 text-2xs font-medium text-pomegranate-400">{error}</p> : null}
     </div>
   );
 }
@@ -195,4 +195,62 @@ export function Delta({
 
 export function Num({ children }: { children: string | number }) {
   return <span className="tabular">{faDigits(children)}</span>;
+}
+
+export function TextField({
+  label, value, onChange, hint, error, placeholder, dir, type = 'text', disabled, required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: ReactNode;
+  error?: string | null;
+  placeholder?: string;
+  dir?: 'rtl' | 'ltr';
+  type?: 'text' | 'email' | 'tel' | 'date';
+  disabled?: boolean;
+  required?: boolean;
+}) {
+  const id = useId();
+  return (
+    <Field label={label} hint={hint} error={error} htmlFor={id}>
+      <input
+        id={id}
+        type={type}
+        dir={dir ?? (type === 'text' ? 'rtl' : 'ltr')}
+        className="input"
+        value={value}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        aria-invalid={error ? true : undefined}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </Field>
+  );
+}
+
+export function TextAreaField({
+  label, value, onChange, hint, rows = 2, placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: ReactNode;
+  rows?: number;
+  placeholder?: string;
+}) {
+  const id = useId();
+  return (
+    <Field label={label} hint={hint} htmlFor={id}>
+      <textarea
+        id={id}
+        rows={rows}
+        className="input resize-y"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </Field>
+  );
 }

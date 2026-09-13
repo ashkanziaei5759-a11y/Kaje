@@ -4,6 +4,9 @@ import { PageHeader, KpiCard, Table, Badge } from '@/components/ui';
 import { formatCurrency, formatPercent, formatNumber, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
 import { resolveRange } from '@/server/services/reports';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { WasteForm } from '@/components/ops/WasteForm';
+import { getStockPositions } from '@/server/services/inventory';
 
 export const metadata = { title: 'ضایعات' };
 export const dynamic = 'force-dynamic';
@@ -33,6 +36,20 @@ export default async function WastePage() {
     }),
     prisma.unitDefinition.findMany({ where: { restaurantId: user.restaurantId } }),
   ]);
+
+  // The entry form needs live stock and cost per ingredient so it can warn
+  // before someone books more waste than the warehouse holds.
+  const canWrite = hasPermission(user.permissions, PERMISSIONS.WASTE_WRITE);
+  const [positions, wasteableIngredients] = canWrite
+    ? await Promise.all([
+        getStockPositions(user.restaurantId),
+        prisma.ingredient.findMany({
+          where: { restaurantId: user.restaurantId, isActive: true },
+          select: { id: true, namePersian: true, recipeUnitId: true },
+          orderBy: { namePersian: 'asc' },
+        }),
+      ])
+    : [new Map(), []];
 
   const symbol = restaurant?.currencySymbol ?? '';
   const unitLabel = new Map(units.map((u) => [u.id, u.labelPersian]));
@@ -68,6 +85,22 @@ export default async function WastePage() {
         title="ضایعات"
         subtitle="ضایعات ثبت‌شده هم موجودی انبار و هم قیمت تمام‌شده واقعی را تحت تأثیر قرار می‌دهد"
       />
+
+      {canWrite ? (
+        <WasteForm
+          currency={symbol}
+          ingredients={wasteableIngredients.map((i) => {
+            const position = positions.get(i.id);
+            return {
+              id: i.id,
+              label: i.namePersian,
+              unit: unitLabel.get(i.recipeUnitId) ?? '',
+              avgCost: (position?.avgUnitCost ?? 0).toString(),
+              inStock: (position?.quantity ?? 0).toString(),
+            };
+          })}
+        />
+      ) : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard

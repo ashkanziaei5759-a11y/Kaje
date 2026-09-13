@@ -5,6 +5,8 @@ import { PageHeader, KpiCard, Table, Badge } from '@/components/ui';
 import { RangePicker } from '@/components/RangePicker';
 import { formatCurrency, formatPercent, faDigits } from '@/lib/format';
 import { formatJalali } from '@/lib/jalali';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { ExpenseForm } from '@/components/ops/ExpenseForm';
 
 export const metadata = { title: 'هزینه‌ها' };
 export const dynamic = 'force-dynamic';
@@ -33,6 +35,20 @@ export default async function ExpensesPage({
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
+
+  const canWrite = hasPermission(user.permissions, PERMISSIONS.EXPENSE_WRITE);
+  const [expenseCategories, expenseSuppliers] = canWrite
+    ? await Promise.all([
+        prisma.expenseCategory.findMany({
+          where: { restaurantId: user.restaurantId },
+          orderBy: { namePersian: 'asc' },
+        }),
+        prisma.supplier.findMany({
+          where: { restaurantId: user.restaurantId, isActive: true },
+          orderBy: { name: 'asc' },
+        }),
+      ])
+    : [[], []];
   const total = Number(summary.total);
 
   return (
@@ -42,6 +58,18 @@ export default async function ExpensesPage({
         subtitle="هزینه‌های سربار و حقوق — پایه تخصیص سربار به هر پرس"
         action={<RangePicker current={preset} />}
       />
+
+      {canWrite ? (
+        <ExpenseForm
+          currency={symbol}
+          categories={expenseCategories.map((c) => ({
+            id: c.id,
+            label: c.namePersian,
+            isOverhead: c.isOverhead,
+          }))}
+          suppliers={expenseSuppliers.map((s) => ({ id: s.id, label: s.namePersian || s.name }))}
+        />
+      ) : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="کل هزینه دوره" value={formatCurrency(summary.total, { symbol, compact: true })} />

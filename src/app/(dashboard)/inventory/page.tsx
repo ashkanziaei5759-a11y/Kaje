@@ -4,6 +4,8 @@ import { getStockAlerts, getInventoryValuation } from '@/server/services/invento
 import { PageHeader, KpiCard, Badge, Table } from '@/components/ui';
 import { formatCurrency, formatNumber, faDigits } from '@/lib/format';
 import { formatJalaliDateTime } from '@/lib/jalali';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { StockCountForm } from '@/components/ops/StockCountForm';
 
 export const metadata = { title: 'موجودی' };
 export const dynamic = 'force-dynamic';
@@ -49,6 +51,8 @@ export default async function InventoryPage() {
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
+
+  const canCount = hasPermission(user.permissions, PERMISSIONS.INVENTORY_COUNT);
   const unitLabel = new Map(units.map((u) => [u.id, u.labelPersian]));
   const alertByIngredient = new Map(alerts.map((a) => [a.ingredientId, a]));
 
@@ -61,6 +65,17 @@ export default async function InventoryPage() {
         title="موجودی انبار"
         subtitle="موجودی لحظه‌ای، ارزش‌گذاری میانگین موزون و دفتر کامل حرکت کالا"
       />
+
+      {canCount ? (
+        <StockCountForm
+          rows={levels.map((level) => ({
+            id: level.ingredientId,
+            label: level.ingredient.namePersian,
+            unit: unitLabel.get(level.ingredient.recipeUnitId) ?? '',
+            systemQuantity: level.quantity.toString(),
+          }))}
+        />
+      ) : null}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
