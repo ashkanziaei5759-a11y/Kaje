@@ -448,3 +448,103 @@ export async function upsertEmployee(args: {
 }
 
 export type { Prisma };
+
+// ── New dishes ───────────────────────────────────────────────────────────────
+
+export interface DishLineInput {
+  ingredientId: string;
+  /** In the ingredient's recipe unit — grams, millilitres, pieces. */
+  quantity: string;
+  wastePercent?: string;
+}
+
+/**
+ * Creates a dish: its recipe (the bill of materials) and the menu item that
+ * sells it, in one transaction.
+ *
+ * The selling price is deliberately left unset. It is the engine's job to say
+ * what the dish costs and what it should sell for, and the manager's job to
+ * accept or override that — inventing a price here would bury the one decision
+ * the whole system exists to inform.
+ */
+export async function createDish(args: {
+  restaurantId: string;
+  categoryId: string;
+  namePersian: string;
+  description?: string | null;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  lines: DishLineInput[];
+}) {
+  if (args.lines.length === 0) {
+    throw new OperationError('یک غذا باید حداقل یک ماده اولیه داشته باشد', 'NO_LINES');
+  }
+
+  const category = await prisma.menuCategory.findFirst({
+    where: { id: args.categoryId, restaurantId: args.restaurantId },
+  });
+  if (!category) throw new OperationError('دستهٔ منو معتبر نیست', 'BAD_CATEGORY');
+
+  const ingredients = await prisma.ingredient.findMany({
+    where: { id: { in: args.lines.map((l) => l.ingredientId) }, restaurantId: args.restaurantId },
+    select: { id: true, recipeUnitId: true },
+  });
+  const unitOf = new Map(ingredients.map((i) => [i.id, i.recipeUnitId]));
+  for (const line of args.lines) {
+    if (!unitOf.has(line.ingredientId)) {
+      throw new OperationError('یکی از مواد اولیه معتبر نیست', 'BAD_INGREDIENT');
+    }
+    if (d(line.quantity).lessThanOrEqualTo(0)) {
+      throw new OperationError('مقدار هر ماده باید بزرگ‌تر از صفر باشد', 'BAD_QUANTITY');
+    }
+  }
+
+  const duplicate = await prisma.menuItem.findFirst({
+    where: { restaurantId: args.restaurantId, namePersian: args.namePersian },
+  });
+  if (duplicate) {
+    throw new OperationError('غذایی با این نام از قبل در منو هست', 'DUPLICATE');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const recipe = await tx.recipe.create({
+      data: {
+        restaurantId: args.restaurantId,
+        name: args.namePersian,
+        namePersian: args.namePersian,
+        type: 'MENU_ITEM',
+        description: args.description || null,
+        // One batch yields one portion: this recipe IS the dish, so the engine
+        // must not divide its cost across a batch.
+        yieldQuantity: '1',
+        prepTimeMinutes: args.prepTimeMinutes,
+        cookTimeMinutes: args.cookTimeMinutes,
+        items: {
+          create: args.lines.map((l, i) => ({
+            ingredientId: l.ingredientId,
+            quantity: l.quantity,
+            unitId: unitOf.get(l.ingredientId)!,
+            wastePercent: l.wastePercent ?? '0',
+            sortOrder: i,
+          })),
+        },
+      },
+    });
+
+    const menuItem = await tx.menuItem.create({
+      data: {
+        restaurantId: args.restaurantId,
+        categoryId: args.categoryId,
+        recipeId: recipe.id,
+        name: args.namePersian,
+        namePersian: args.namePersian,
+        descriptionPersian: args.description || null,
+        // No price yet — the manager sets it from the costing screen, where the
+        // recommendation and the margin it implies are both visible.
+        sellingPrice: null,
+      },
+    });
+
+    return { recipeId: recipe.id, menuItemId: menuItem.id };
+  }, { timeout: TX_TIMEOUT_MS });
+}

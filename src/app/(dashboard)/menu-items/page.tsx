@@ -5,6 +5,9 @@ import { costAllMenuItems } from '@/server/services/costing';
 import { PageHeader, Badge, Table } from '@/components/ui';
 import { CostBar } from '@/components/CostBar';
 import { formatCurrency, formatPercent } from '@/lib/format';
+import { hasPermission, PERMISSIONS } from '@/lib/auth/permissions';
+import { NewDishForm } from '@/components/ops/NewDishForm';
+import { d } from '@/lib/money';
 
 export const metadata = { title: 'آیتم‌های منو' };
 export const dynamic = 'force-dynamic';
@@ -26,6 +29,25 @@ export default async function MenuItemsPage() {
   ]);
 
   const symbol = restaurant?.currencySymbol ?? '';
+
+  const canAddDish = hasPermission(user.permissions, [
+    PERMISSIONS.MENU_WRITE,
+    PERMISSIONS.RECIPE_WRITE,
+  ]);
+  const [dishIngredients, dishUnits] = canAddDish
+    ? await Promise.all([
+        prisma.ingredient.findMany({
+          where: { restaurantId: user.restaurantId, isActive: true, isPackaging: false },
+          select: {
+            id: true, namePersian: true, averagePrice: true,
+            conversionFactor: true, yieldPercent: true, recipeUnitId: true,
+          },
+          orderBy: { namePersian: 'asc' },
+        }),
+        prisma.unitDefinition.findMany({ where: { restaurantId: user.restaurantId } }),
+      ])
+    : [[], []];
+  const dishUnitLabel = new Map(dishUnits.map((u) => [u.id, u.labelPersian]));
   const meta = new Map(items.map((i) => [i.id, i]));
   const byCategory = new Map(categories.map((c) => [c.id, c]));
 
@@ -46,6 +68,24 @@ export default async function MenuItemsPage() {
           )
         }
       />
+
+      {canAddDish ? (
+        <NewDishForm
+          currency={symbol}
+          categories={categories.map((c) => ({ id: c.id, label: c.namePersian }))}
+          ingredients={dishIngredients.map((i) => ({
+            id: i.id,
+            label: i.namePersian,
+            unit: dishUnitLabel.get(i.recipeUnitId) ?? '',
+            // Cost of one usable recipe unit: the purchase price spread over the
+            // units it yields, then divided by the fraction that survives prep.
+            costPerUnit: d(i.averagePrice)
+              .dividedBy(d(i.conversionFactor))
+              .dividedBy(d(i.yieldPercent).isZero() ? 1 : d(i.yieldPercent))
+              .toString(),
+          }))}
+        />
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {costed
